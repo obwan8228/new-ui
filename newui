@@ -3032,6 +3032,16 @@ local Library do
             return setmetatable(Page, Library.Pages)
         end
 
+        Library.Pages.SubPage = function(self, Data)
+            Data = Data or { }
+
+            local SubPage = self.Window:Page(Data)
+            SubPage.ParentPage = self
+            SubPage.IsSubPage = true
+
+            return SubPage
+        end
+
         Library.Pages.Section = function(self, Data)
             Data = Data or { }
 
