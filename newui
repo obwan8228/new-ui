@@ -2877,7 +2877,10 @@ Library.Page = function(self, Data)
 
         Page.Active = Bool
         Items["PageContent"].Instance.Visible = Bool
-        Items["PageContent"].Instance.Parent = Bool and Page.Window.Items["Content"].Instance or Library.UnusedHolder.Instance
+
+        if Items["PageContent"].Instance.Parent ~= Page.Window.Items["Content"].Instance then
+            Items["PageContent"].Instance.Parent = Bool and Page.Window.Items["Content"].Instance or Library.UnusedHolder.Instance
+        end
 
         if Bool then
             Items["Icon"]:Tween(nil, {ImageTransparency = 0})
@@ -2886,7 +2889,6 @@ Library.Page = function(self, Data)
             Items["Icon"]:Tween(nil, {ImageTransparency = 0.5})
         end
 
-        -- Fade logic (keep your existing fade code here)
         local NewTween = Tween:FadeItem(Items["PageContent"], nil, Bool, Library.FadeSpeed)
 
         Library:Connect(NewTween.Tween.Completed, function()
