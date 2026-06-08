@@ -2877,7 +2877,7 @@ Library.Page = function(self, Data)
 
         Page.Active = Bool
 
-        -- Extremely safe PageContent handling
+        -- Safe PageContent handling
         local PageContent = Items["PageContent"]
         if PageContent and PageContent.Instance then
             PageContent.Instance.Visible = Bool
@@ -2904,9 +2904,9 @@ Library.Page = function(self, Data)
             end
         end
 
-        -- Safe fade with extra protection
-        if PageContent then
-            local NewTween = Tween:FadeItem(PageContent, nil, Bool, Library.FadeSpeed)
+        -- FIXED Fade call
+        if PageContent and PageContent.Instance then
+            local NewTween = Tween:FadeItem(PageContent.Instance, "BackgroundTransparency", Bool, Library.FadeSpeed)
 
             if NewTween and NewTween.Tween then
                 Library:Connect(NewTween.Tween.Completed, function()
