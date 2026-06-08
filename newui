@@ -3037,18 +3037,30 @@ Library.Pages.SubPage = function(self, Data)
                 PaddingBottom = UDimNew(0, 8),
             })
         end
+
+        SubPage.Items = Items
     end
 
     function SubPage:Switch(Bool)
         SubPage.Active = Bool
-        Items["PageContent"].Instance.Visible = Bool
+        if Items["PageContent"] and Items["PageContent"].Instance then
+            Items["PageContent"].Instance.Visible = Bool
+        end
 
         if Bool then
-            Items["TabButton"]:Tween(nil, {BackgroundTransparency = 0})
-            Items["TabText"]:Tween(nil, {TextColor3 = Library.Theme.Text})
+            if Items["TabButton"] then
+                Items["TabButton"]:Tween(nil, {BackgroundTransparency = 0})
+            end
+            if Items["TabText"] then
+                Items["TabText"]:Tween(nil, {TextColor3 = Library.Theme.Text})
+            end
         else
-            Items["TabButton"]:Tween(nil, {BackgroundTransparency = 1})
-            Items["TabText"]:Tween(nil, {TextColor3 = FromRGB(200, 200, 200)})
+            if Items["TabButton"] then
+                Items["TabButton"]:Tween(nil, {BackgroundTransparency = 1})
+            end
+            if Items["TabText"] then
+                Items["TabText"]:Tween(nil, {TextColor3 = FromRGB(200, 200, 200)})
+            end
         end
     end
 
