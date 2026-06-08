@@ -2876,24 +2876,43 @@ Library.Page = function(self, Data)
         Debounce = true
 
         Page.Active = Bool
-        Items["PageContent"].Instance.Visible = Bool
 
-        if Items["PageContent"].Instance.Parent ~= Page.Window.Items["Content"].Instance then
-            Items["PageContent"].Instance.Parent = Bool and Page.Window.Items["Content"].Instance or Library.UnusedHolder.Instance
+        -- Safe PageContent handling
+        if Items["PageContent"] and Items["PageContent"].Instance then
+            Items["PageContent"].Instance.Visible = Bool
+
+            if Bool then
+                if Items["PageContent"].Instance.Parent ~= Page.Window.Items["Content"].Instance then
+                    Items["PageContent"].Instance.Parent = Page.Window.Items["Content"].Instance
+                end
+            else
+                if Items["PageContent"].Instance.Parent ~= Library.UnusedHolder.Instance then
+                    Items["PageContent"].Instance.Parent = Library.UnusedHolder.Instance
+                end
+            end
         end
 
         if Bool then
-            Items["Icon"]:Tween(nil, {ImageTransparency = 0})
+            if Items["Icon"] then
+                Items["Icon"]:Tween(nil, {ImageTransparency = 0})
+            end
             Library.CurrentPage = Page
         else
-            Items["Icon"]:Tween(nil, {ImageTransparency = 0.5})
+            if Items["Icon"] then
+                Items["Icon"]:Tween(nil, {ImageTransparency = 0.5})
+            end
         end
 
-        local NewTween = Tween:FadeItem(Items["PageContent"], nil, Bool, Library.FadeSpeed)
+        -- Safe fade
+        if Items["PageContent"] then
+            local NewTween = Tween:FadeItem(Items["PageContent"], nil, Bool, Library.FadeSpeed)
 
-        Library:Connect(NewTween.Tween.Completed, function()
+            Library:Connect(NewTween.Tween.Completed, function()
+                Debounce = false
+            end)
+        else
             Debounce = false
-        end)
+        end
     end
 
     -- NEW: SubPage function
