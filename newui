@@ -2913,6 +2913,133 @@ Library.Page = function(self, Data)
     return setmetatable(Page, Library.Pages)
 end
 
+-- ==================== SUBPAGE SUPPORT ====================
+Library.Pages.SubPage = function(self, Data)
+    Data = Data or { }
+
+    local SubPage = {
+        Window = self.Window,
+        Page = self,
+
+        Name = Data.Name or Data.name or "SubPage",
+        Icon = Data.Icon or Data.icon or "9080568477801",
+        Columns = Data.Columns or Data.columns or 2,
+
+        Items = { },
+        ColumnsData = { },
+        Active = false
+    }
+
+    Library.SearchItems[SubPage] = { }
+
+    local Items = { } do
+        Items["PageContent"] = Instances:Create("Frame", {
+            Parent = SubPage.Page.Items["Columns"].Instance,
+            Name = "\0",
+            Visible = false,
+            BackgroundTransparency = 1,
+            Size = UDim2New(1, 0, 1, 0),
+            BorderSizePixel = 0,
+        })
+
+        Instances:Create("UIListLayout", {
+            Parent = Items["PageContent"].Instance,
+            FillDirection = Enum.FillDirection.Horizontal,
+            HorizontalFlex = Enum.UIFlexAlignment.Fill,
+            Padding = UDimNew(0, 14),
+            SortOrder = Enum.SortOrder.LayoutOrder,
+            VerticalFlex = Enum.UIFlexAlignment.Fill
+        })
+
+        -- SubPage Tab Button
+        Items["TabButton"] = Instances:Create("TextButton", {
+            Parent = SubPage.Page.Items["SubPagesBar"].Instance,
+            Name = "\0",
+            AutoButtonColor = false,
+            BackgroundTransparency = 1,
+            Size = UDim2New(0, 0, 0, 32),
+            BorderSizePixel = 0,
+        })
+
+        Instances:Create("UICorner", {
+            Parent = Items["TabButton"].Instance,
+            CornerRadius = UDimNew(1, 0)
+        })
+
+        Items["TabIcon"] = Instances:Create("ImageLabel", {
+            Parent = Items["TabButton"].Instance,
+            Name = "\0",
+            Image = "rbxassetid://" .. SubPage.Icon,
+            Size = UDim2New(0, 20, 0, 20),
+            BackgroundTransparency = 1,
+            Position = UDim2New(0, 8, 0.5, 0),
+            AnchorPoint = Vector2New(0, 0.5),
+        })  Items["TabIcon"]:AddToTheme({ImageColor3 = "Text"})
+
+        Items["TabText"] = Instances:Create("TextLabel", {
+            Parent = Items["TabButton"].Instance,
+            Name = "\0",
+            Text = SubPage.Name,
+            FontFace = Library.Font,
+            TextSize = 14,
+            BackgroundTransparency = 1,
+            Position = UDim2New(0, 34, 0.5, 0),
+            AnchorPoint = Vector2New(0, 0.5),
+            TextColor3 = FromRGB(200, 200, 200)
+        })  Items["TabText"]:AddToTheme({TextColor3 = "Text"})
+
+        -- Create Columns for this SubPage
+        for i = 1, SubPage.Columns do
+            local Column = Instances:Create("ScrollingFrame", {
+                Parent = Items["PageContent"].Instance,
+                Name = "\0",
+                BackgroundTransparency = 1,
+                ScrollBarThickness = 0,
+                AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                Size = UDim2New(0.5, -7, 1, 0),
+            })
+            SubPage.ColumnsData[i] = Column
+
+            Instances:Create("UIListLayout", {
+                Parent = Column.Instance,
+                Padding = UDimNew(0, 12),
+                SortOrder = Enum.SortOrder.LayoutOrder
+            })
+            Instances:Create("UIPadding", {
+                Parent = Column.Instance,
+                PaddingTop = UDimNew(0, 8),
+                PaddingBottom = UDimNew(0, 8),
+            })
+        end
+    end
+
+    function SubPage:Switch(Bool)
+        SubPage.Active = Bool
+        Items["PageContent"].Instance.Visible = Bool
+
+        if Bool then
+            Items["TabButton"]:Tween(nil, {BackgroundTransparency = 0})
+            Items["TabText"]:Tween(nil, {TextColor3 = Library.Theme.Text})
+        else
+            Items["TabButton"]:Tween(nil, {BackgroundTransparency = 1})
+            Items["TabText"]:Tween(nil, {TextColor3 = FromRGB(200, 200, 200)})
+        end
+    end
+
+    Items["TabButton"]:Connect("MouseButton1Down", function()
+        for _, sp in ipairs(SubPage.Page.SubPagesStack) do
+            sp:Switch(sp == SubPage)
+        end
+    end)
+
+    if #SubPage.Page.SubPagesStack == 0 then
+        SubPage:Switch(true)
+    end
+
+    TableInsert(SubPage.Page.SubPagesStack, SubPage)
+    return setmetatable(SubPage, Library.Pages)
+end
+
         Library.Pages.Section = function(self, Data)
             Data = Data or { }
 
