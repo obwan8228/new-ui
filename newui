@@ -949,6 +949,8 @@ local Library do
 
     do
         Library.CreateColorpicker = function(self, Data)
+            local Parent = typeof(Data.Parent) == "Instance" and Data.Parent or Data.Parent.Instance
+
             local Colorpicker = {
                 Flag = Data.Flag, 
 
@@ -964,7 +966,7 @@ local Library do
 
             local Items = { } do 
                 Items["ColorpickerButton"] = Instances:Create("TextButton", {
-                    Parent = Data.Parent.Instance,
+                    Parent = Parent,
                     Name = "\0",
                     FontFace = Library.Font,
                     TextColor3 = FromRGB(0, 0, 0),
@@ -1400,6 +1402,8 @@ local Library do
         end
 
         Library.CreateKeybind = function(self, Data)
+            local Parent = typeof(Data.Parent) == "Instance" and Data.Parent or Data.Parent.Instance
+
             local Keybind = {
                 Flag = Data.Flag,
 
@@ -1414,7 +1418,7 @@ local Library do
 
             local Items = { } do
                 Items["KeyButton"] = Instances:Create("TextButton", {
-                    Parent = Data.Parent.Instance,
+                    Parent = Parent,
                     Name = "\0",
                     FontFace = Library.Font,
                     TextColor3 = FromRGB(100, 100, 100),
@@ -3332,7 +3336,7 @@ local Library do
                 }
 
                 local NewColorpicker, ColorpickerItems = Library:CreateColorpicker({
-                    Parent = Items["SubElements"].Instance,
+                    Parent = Items["SubElements"],
                     Page = Colorpicker.Page,
                     Section = Colorpicker.Section,
                     Flag = Colorpicker.Flag,
@@ -3359,7 +3363,7 @@ local Library do
                 }
 
                 local NewKeybind, KeybindItems = Library:CreateKeybind({
-                    Parent = Items["SubElements"].Instance,
+                    Parent = Items["SubElements"],
                     Page = Keybind.Page,
                     Section = Keybind.Section,
                     Flag = Keybind.Flag,
@@ -4359,7 +4363,7 @@ local Library do
                 }
 
                 local NewColorpicker, ColorpickerItems = Library:CreateColorpicker({
-                    Parent = Items["SubElements"].Instance,
+                    Parent = Items["SubElements"],
                     Page = Colorpicker.Page,
                     Section = Colorpicker.Section,
                     Flag = Colorpicker.Flag,
@@ -4386,7 +4390,7 @@ local Library do
                 }
 
                 local NewKeybind, KeybindItems = Library:CreateKeybind({
-                    Parent = Items["SubElements"].Instance,
+                    Parent = Items["SubElements"],
                     Page = Keybind.Page,
                     Section = Keybind.Section,
                     Flag = Keybind.Flag,
