@@ -187,13 +187,13 @@ local Library do
 
     local Themes = {
         ["Preset"] = {
-            ["Background"] = FromRGB(13, 15, 18),
-            ["Inline"] = FromRGB(22, 25, 30),
-            ["Outline"] = FromRGB(26, 30, 36),
-            ["Text"] = FromRGB(200, 200, 200),
+            ["Background"] = FromRGB(14, 17, 15),
+            ["Inline"] = FromRGB(16, 19, 16),
+            ["Outline"] = FromRGB(23, 30, 36),
+            ["Text"] = FromRGB(235, 235, 235),
             ["Dark Text"] = FromRGB(100, 100, 100),
-            ["Element"] = FromRGB(28, 32, 38),
-            ["Accent"] = FromRGB(184, 212, 255)
+            ["Element"] = FromRGB(30, 36, 31),
+            ["Accent"] = FromRGB(54, 85, 120)
         }
     }
 
