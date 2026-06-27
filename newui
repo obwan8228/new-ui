@@ -1892,6 +1892,7 @@ local Themes = {
                     })                
                 end
 
+                task.wait()
                 local Size = Items["Notification"].Instance.AbsoluteSize
                 Items["Notification"].Instance.Size = UDim2New(0, 0, 0, 0)
     
@@ -3159,17 +3160,61 @@ local Themes = {
 
             SubPage.SubPageButtonItems = ButtonItems
 
+            local Debounce = false
+
             function SubPage:Turn(Bool)
+                if Debounce then
+                    return
+                end
+
                 SubPage.Active = Bool
+
+                Debounce = true
                 SubPage.Items["Page"].Instance.Visible = Bool
                 SubPage.Items["Page"].Instance.Parent = Bool and self.ParentPage.Items["SubPagesContent"].Instance or Library.UnusedHolder.Instance
                 SubPage.Items["Page"].Instance.Position = UDim2New(0, 0, 0, 0)
                 SubPage.Items["Page"].Instance.Size = UDim2New(1, 0, 1, 0)
 
-                ButtonItems["Button"].Instance.BackgroundColor3 = Bool and Library.Theme.Accent or Library.Theme.Background
-                ButtonItems["Icon"].Instance.ImageColor3 = Bool and FromRGB(0, 0, 0) or Library.Theme.Text
-                ButtonItems["Icon"].Instance.ImageTransparency = Bool and 0 or 0.5
-                ButtonItems["Text"].Instance.TextColor3 = Bool and FromRGB(0, 0, 0) or Library.Theme.Text
+                if Bool then
+                    ButtonItems["Button"].Instance.BackgroundColor3 = Library.Theme.Accent
+                    ButtonItems["Icon"].Instance.ImageColor3 = FromRGB(0, 0, 0)
+                    ButtonItems["Text"].Instance.TextColor3 = FromRGB(0, 0, 0)
+
+                    ButtonItems["Icon"].Instance.ImageTransparency = 1
+                    ButtonItems["Icon"]:Tween(nil, {ImageTransparency = 0})
+                else
+                    ButtonItems["Button"].Instance.BackgroundColor3 = Library.Theme.Background
+                    ButtonItems["Icon"].Instance.ImageColor3 = Library.Theme.Text
+                    ButtonItems["Text"].Instance.TextColor3 = Library.Theme.Text
+
+                    ButtonItems["Icon"].Instance.ImageTransparency = 0
+                    ButtonItems["Icon"]:Tween(nil, {ImageTransparency = 0.5})
+                end
+
+                local AllInstances = SubPage.Items["Page"].Instance:GetDescendants()
+                TableInsert(AllInstances, SubPage.Items["Page"].Instance)
+
+                local NewTween
+
+                for Index, Value in AllInstances do
+                    local TransparencyProperty = Tween:GetProperty(Value)
+
+                    if not TransparencyProperty then
+                        continue
+                    end
+
+                    if type(TransparencyProperty) == "table" then
+                        for _, Property in TransparencyProperty do
+                            NewTween = Tween:FadeItem(Value, Property, Bool, Library.FadeSpeed)
+                        end
+                    else
+                        NewTween = Tween:FadeItem(Value, TransparencyProperty, Bool, Library.FadeSpeed)
+                    end
+                end
+
+                Library:Connect(NewTween.Tween.Completed, function()
+                    Debounce = false
+                end)
 
                 if Bool then
                     self.ParentPage.ActiveSubPage = SubPage
