@@ -1826,125 +1826,115 @@ local Themes = {
             Name = Name or "Notification"
             Duration = Duration or 5
 
-            --Library:Thread(function() lol
-                local Items = { } do
-                    Items["Notification"] = Instances:Create("Frame", {
-                        Parent = Library.NotifHolder.Instance,
-                        Name = "\0",
-                        Size = UDim2New(0, 0, 0, 32),
-                        BorderColor3 = FromRGB(0, 0, 0),
-                        BorderSizePixel = 0,
-                        AutomaticSize = Enum.AutomaticSize.X,
-                        BackgroundColor3 = FromRGB(13, 15, 18)
-                    })  Items["Notification"]:AddToTheme({BackgroundColor3 = "Background"})
-                    
-                    Instances:Create("UICorner", {
-                        Parent = Items["Notification"].Instance,
-                        Name = "\0",
-                        CornerRadius = UDimNew(0, 6)
-                    })
-                    
-                    Items["Stroke"] = Instances:Create("UIStroke", {
-                        Parent = Items["Notification"].Instance,
-                        Name = "\0",
-                        Color = FromRGB(26, 30, 36),
-                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                    })  Items["Stroke"]:AddToTheme({Color = "Outline"})
-                    
-                    Items["Text"] = Instances:Create("TextLabel", {
-                        Parent = Items["Notification"].Instance,
-                        Name = "\0",
-                        FontFace = Library.Font,
-                        TextColor3 = FromRGB(200, 200, 200),
-                        BorderColor3 = FromRGB(0, 0, 0),
-                        Text = Name,
-                        AnchorPoint = Vector2New(0, 0.5),
-                        Size = UDim2New(0, 0, 0, 15),
-                        BackgroundTransparency = 1,
-                        Position = UDim2New(0, 24, 0.5, 0),
-                        BorderSizePixel = 0,
-                        AutomaticSize = Enum.AutomaticSize.X,
-                        TextSize = 14,
-                        BackgroundColor3 = FromRGB(255, 255, 255)
-                    })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
-                    
-                    Items["Icon"] = Instances:Create("ImageLabel", {
-                        Parent = Items["Notification"].Instance,
-                        Name = "\0",
-                        ImageColor3 = FromRGB(200, 200, 200),
-                        BorderColor3 = FromRGB(0, 0, 0),
-                        AnchorPoint = Vector2New(0, 0.5),
-                        Image = "rbxassetid://"..Icon,
-                        BackgroundTransparency = 1,
-                        Position = UDim2New(0, 0, 0.5, 0),
-                        Size = UDim2New(0, 16, 0, 16),
-                        BorderSizePixel = 0,
-                        BackgroundColor3 = FromRGB(255, 255, 255)
-                    })  Items["Icon"]:AddToTheme({ImageColor3 = "Text"})
-                    
-                    Instances:Create("UIPadding", {
-                        Parent = Items["Notification"].Instance,
-                        Name = "\0",
-                        PaddingTop = UDimNew(0, 8),
-                        PaddingBottom = UDimNew(0, 8),
-                        PaddingRight = UDimNew(0, 8),
-                        PaddingLeft = UDimNew(0, 8)
-                    })                
-                end
+            local Items = { } do
+                Items["Notification"] = Instances:Create("Frame", {
+                    Parent = Library.NotifHolder.Instance,
+                    Name = "\0",
+                    Size = UDim2New(0, 0, 0, 32),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BorderSizePixel = 0,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    BackgroundColor3 = FromRGB(13, 15, 18)
+                })  Items["Notification"]:AddToTheme({BackgroundColor3 = "Background"})
+                
+                Instances:Create("UICorner", {
+                    Parent = Items["Notification"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 6)
+                })
+                
+                Items["Stroke"] = Instances:Create("UIStroke", {
+                    Parent = Items["Notification"].Instance,
+                    Name = "\0",
+                    Color = FromRGB(26, 30, 36),
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                })  Items["Stroke"]:AddToTheme({Color = "Outline"})
+                
+                Items["Text"] = Instances:Create("TextLabel", {
+                    Parent = Items["Notification"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = FromRGB(200, 200, 200),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = Name,
+                    AnchorPoint = Vector2New(0, 0.5),
+                    Size = UDim2New(0, 0, 0, 15),
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 24, 0.5, 0),
+                    BorderSizePixel = 0,
+                    AutomaticSize = Enum.AutomaticSize.X,
+                    TextSize = 14,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
+                
+                Items["Icon"] = Instances:Create("ImageLabel", {
+                    Parent = Items["Notification"].Instance,
+                    Name = "\0",
+                    ImageColor3 = FromRGB(200, 200, 200),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    AnchorPoint = Vector2New(0, 0.5),
+                    Image = "rbxassetid://"..Icon,
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 0, 0.5, 0),
+                    Size = UDim2New(0, 16, 0, 16),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })  Items["Icon"]:AddToTheme({ImageColor3 = "Text"})
+                
+                Instances:Create("UIPadding", {
+                    Parent = Items["Notification"].Instance,
+                    Name = "\0",
+                    PaddingTop = UDimNew(0, 8),
+                    PaddingBottom = UDimNew(0, 8),
+                    PaddingRight = UDimNew(0, 8),
+                    PaddingLeft = UDimNew(0, 8)
+                })                
+            end
 
-                task.wait()
-                local Size = Items["Notification"].Instance.AbsoluteSize
-                Items["Notification"].Instance.Size = UDim2New(0, 0, 0, 0)
-    
+            for Index, Value in Items do 
+                if Value.Instance:IsA("Frame") then
+                    Value.Instance.BackgroundTransparency = 1
+                elseif Value.Instance:IsA("TextLabel") then 
+                    Value.Instance.TextTransparency = 1
+                elseif Value.Instance:IsA("ImageLabel") then 
+                    Value.Instance.ImageTransparency = 1
+                elseif Value.Instance:IsA("UIStroke") then
+                    Value.Instance.Transparency = 1
+                end
+            end 
+
+            Library:Thread(function()
+                local Info = TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out, 0, false, 0)
+
                 for Index, Value in Items do 
                     if Value.Instance:IsA("Frame") then
-                        Value.Instance.BackgroundTransparency = 1
+                        Value:Tween(Info, {BackgroundTransparency = 0})
                     elseif Value.Instance:IsA("TextLabel") then 
-                        Value.Instance.TextTransparency = 1
+                        Value:Tween(Info, {TextTransparency = 0})
                     elseif Value.Instance:IsA("ImageLabel") then 
-                        Value.Instance.ImageTransparency = 1
-                    elseif Value.Instance:IsA("UIStroke") then
-                        Value.Instance.Transparency = 1
+                        Value:Tween(Info, {ImageTransparency = 0})
+                    elseif Value.Instance:IsA("UIStroke") then 
+                        Value:Tween(Info, {Transparency = 0})
                     end
-                end 
-    
-                Items["Notification"].Instance.AutomaticSize = Enum.AutomaticSize.Y
-                local Info = TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out, 0, false, 0)
-    
-                Library:Thread(function()
+                end
+
+                task.delay(Duration, function()
                     for Index, Value in Items do 
                         if Value.Instance:IsA("Frame") then
-                            Value:Tween(Info, {BackgroundTransparency = 0})
+                            Value:Tween(nil, {BackgroundTransparency = 1})
                         elseif Value.Instance:IsA("TextLabel") then 
-                            Value:Tween(Info, {TextTransparency = 0})
+                            Value:Tween(nil, {TextTransparency = 1})
                         elseif Value.Instance:IsA("ImageLabel") then 
-                            Value:Tween(Info, {ImageTransparency = 0})
+                            Value:Tween(nil, {ImageTransparency = 1})
                         elseif Value.Instance:IsA("UIStroke") then 
-                            Value:Tween(Info, {Transparency = 0})
+                            Value:Tween(nil, {Transparency = 1})
                         end
                     end
-    
-                    Items["Notification"]:Tween(Info, {Size = UDim2New(0, Size.X, 0, Size.Y)})
-    
-                    task.delay(Duration + 0.15, function()
-                        for Index, Value in Items do 
-                            if Value.Instance:IsA("Frame") then
-                                Value:Tween(nil, {BackgroundTransparency = 1})
-                            elseif Value.Instance:IsA("TextLabel") then 
-                                Value:Tween(nil, {TextTransparency = 1})
-                            elseif Value.Instance:IsA("ImageLabel") then 
-                                Value:Tween(nil, {ImageTransparency = 1})
-                            elseif Value.Instance:IsA("UIStroke") then 
-                                Value:Tween(nil, {Transparency = 1})
-                            end
-                        end
-    
-                        Items["Notification"]:Tween(Info, {Size = UDim2New(0, 0, 0, 32)})
-                        task.wait(0.5)
-                        Items["Notification"]:Clean()
-                    end)
+
+                    task.wait(0.5)
+                    Items["Notification"]:Clean()
                 end)
-            --end)
+            end)
         end
         
         Library.Window = function(self, Data)
@@ -3115,7 +3105,8 @@ local Themes = {
                 BorderColor3 = FromRGB(0, 0, 0),
                 Text = "",
                 AutoButtonColor = false,
-                Size = UDim2New(0, 115, 1, 0),
+                Size = UDim2New(0, 0, 1, 0),
+                AutomaticSize = Enum.AutomaticSize.X,
                 BorderSizePixel = 0,
                 TextSize = 14,
                 BackgroundColor3 = FromRGB(13, 15, 18)
@@ -3150,7 +3141,8 @@ local Themes = {
                 Text = SubPageName,
                 BackgroundTransparency = 1,
                 Position = UDim2New(0, 31, 0.5, -8),
-                Size = UDim2New(1, -39, 0, 16),
+                Size = UDim2New(0, 0, 0, 16),
+                AutomaticSize = Enum.AutomaticSize.X,
                 BorderSizePixel = 0,
                 TextXAlignment = Enum.TextXAlignment.Left,
                 TextTruncate = Enum.TextTruncate.AtEnd,
