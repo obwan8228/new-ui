@@ -3118,6 +3118,12 @@ local Themes = {
                 CornerRadius = UDimNew(0, 6)
             })
 
+            Instances:Create("UIPadding", {
+                Parent = ButtonItems["Button"].Instance,
+                Name = "\0",
+                PaddingRight = UDimNew(0, 12)
+            })
+
             ButtonItems["Icon"] = Instances:Create("ImageLabel", {
                 Parent = ButtonItems["Button"].Instance,
                 Name = "\0",
