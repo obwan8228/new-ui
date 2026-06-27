@@ -193,7 +193,7 @@ local Themes = {
         ["Text"] = FromRGB(224, 224, 224),
         ["Dark Text"] = FromRGB(161, 161, 161),
         ["Element"] = FromRGB(33, 33, 33),
-        ["Accent"] = FromRGB(54, 85, 120)
+        ["Accent"] = FromRGB(119, 128, 184)
     }
 }
 
