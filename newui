@@ -3238,6 +3238,290 @@ local Themes = {
             return SubPage
         end
 
+        Library.Pages.MultiSection = function(self, Data)
+            Data = Data or { }
+
+            local MultiSection = {
+                Window = self.Window,
+                Page = self,
+
+                Sections = Data.Sections or Data.sections or { "Section 1", "Section 2", "Section 3" },
+                Side = Data.Side or Data.side or 1,
+
+                SectionContents = { },
+                Elements = { }
+            }
+
+            local Items = { } do
+                Items["MultiSection"] = Instances:Create("Frame", {
+                    Parent = MultiSection.Page.ColumnsData[MultiSection.Side].Instance,
+                    Name = "\0",
+                    Size = UDim2New(1, 0, 0, 25),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BorderSizePixel = 0,
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    BackgroundColor3 = FromRGB(22, 25, 30)
+                })  Items["MultiSection"]:AddToTheme({BackgroundColor3 = "Inline"})
+
+                Instances:Create("UICorner", {
+                    Parent = Items["MultiSection"].Instance,
+                    Name = "\0"
+                })
+
+                Instances:Create("UIStroke", {
+                    Parent = Items["MultiSection"].Instance,
+                    Name = "\0",
+                    Color = FromRGB(26, 30, 36),
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                }):AddToTheme({Color = "Outline"})
+
+                Instances:Create("UIPadding", {
+                    Parent = Items["MultiSection"].Instance,
+                    PaddingBottom = UDimNew(0, 6)
+                })
+
+                Items["AccentLine"] = Instances:Create("Frame", {
+                    Parent = Items["MultiSection"].Instance,
+                    Name = "\0",
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(1, 0, 0, 2),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(184, 212, 255)
+                })  Items["AccentLine"]:AddToTheme({BackgroundColor3 = "Accent"})
+
+                Instances:Create("UIGradient", {
+                    Parent = Items["AccentLine"].Instance,
+                    Rotation = 90,
+                    Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(65, 65, 65))}
+                })
+
+                Items["Sections"] = Instances:Create("Frame", {
+                    Parent = Items["MultiSection"].Instance,
+                    Name = "\0",
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 7, 0, 9),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(1, -14, 0, 19),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Items["Sections"].Instance,
+                    FillDirection = Enum.FillDirection.Horizontal,
+                    HorizontalFlex = Enum.UIFlexAlignment.Fill,
+                    Padding = UDimNew(0, 5),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+
+                Items["Content"] = Instances:Create("Frame", {
+                    Parent = Items["MultiSection"].Instance,
+                    Name = "\0",
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 7, 0, 35),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(1, -14, 1, -33),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(15, 15, 20)
+                })
+            end
+
+            for Index, Value in MultiSection.Sections do
+                local NewSection = {
+                    Window = MultiSection.Window,
+                    Page = MultiSection.Page,
+                    MultiSection = MultiSection,
+
+                    Name = Value,
+
+                    Elements = { },
+                    Active = false,
+                }
+
+                local SubItems = { } do
+                    SubItems["Inactive"] = Instances:Create("TextButton", {
+                        Parent = Items["Sections"].Instance,
+                        FontFace = Library.Font,
+                        TextColor3 = FromRGB(0, 0, 0),
+                        BorderColor3 = FromRGB(26, 30, 36),
+                        Text = "",
+                        AutoButtonColor = false,
+                        Name = "\0",
+                        Size = UDim2New(1, 0, 1, 0),
+                        BorderSizePixel = 2,
+                        TextSize = 14,
+                        BackgroundColor3 = FromRGB(13, 15, 18)
+                    })  SubItems["Inactive"]:AddToTheme({BackgroundColor3 = "Background", BorderColor3 = "Outline"})
+
+                    SubItems["Text"] = Instances:Create("TextLabel", {
+                        Parent = SubItems["Inactive"].Instance,
+                        FontFace = Library.Font,
+                        TextColor3 = FromRGB(200, 200, 200),
+                        TextTransparency = 0.48,
+                        Text = NewSection.Name,
+                        Name = "\0",
+                        Size = UDim2New(1, 0, 1, 0),
+                        BackgroundTransparency = 1,
+                        Position = UDim2New(0, 0, 0, -1),
+                        BorderSizePixel = 0,
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        TextSize = 12,
+                        BackgroundColor3 = FromRGB(255, 255, 255)
+                    })  SubItems["Text"]:AddToTheme({TextColor3 = "Text"})
+
+                    Instances:Create("UIStroke", {
+                        Parent = SubItems["Text"].Instance,
+                        LineJoinMode = Enum.LineJoinMode.Miter,
+                        Name = "\0"
+                    }):AddToTheme({Color = "Text Border"})
+
+                    SubItems["Hide"] = Instances:Create("Frame", {
+                        Parent = SubItems["Inactive"].Instance,
+                        Visible = false,
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        AnchorPoint = Vector2New(0, 1),
+                        Name = "\0",
+                        Position = UDim2New(0, 0, 1, 0),
+                        Size = UDim2New(1, 0, 0, 3),
+                        ZIndex = 2,
+                        BorderSizePixel = 0,
+                        BackgroundColor3 = FromRGB(22, 25, 30)
+                    })  SubItems["Hide"]:AddToTheme({BackgroundColor3 = "Inline"})
+
+                    SubItems["MiscPixel1"] = Instances:Create("Frame", {
+                        Parent = SubItems["Hide"].Instance,
+                        Size = UDim2New(0, 1, 0, 1),
+                        Name = "\0",
+                        Position = UDim2New(0, -1, 0, 1),
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        ZIndex = 2,
+                        BorderSizePixel = 0,
+                        BackgroundColor3 = FromRGB(26, 30, 36)
+                    })  SubItems["MiscPixel1"]:AddToTheme({BackgroundColor3 = "Outline"})
+
+                    SubItems["MiscPixel2"] = Instances:Create("Frame", {
+                        Parent = SubItems["Hide"].Instance,
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        AnchorPoint = Vector2New(1, 0),
+                        Name = "\0",
+                        Position = UDim2New(1, 1, 0, 1),
+                        Size = UDim2New(0, 1, 0, 1),
+                        ZIndex = 2,
+                        BorderSizePixel = 0,
+                        BackgroundColor3 = FromRGB(26, 30, 36)
+                    })  SubItems["MiscPixel2"]:AddToTheme({BackgroundColor3 = "Outline"})
+
+                    Instances:Create("UIStroke", {
+                        Parent = SubItems["Inactive"].Instance,
+                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                        LineJoinMode = Enum.LineJoinMode.Miter,
+                        Name = "\0",
+                        Color = FromRGB(26, 30, 36)
+                    }):AddToTheme({Color = "Outline"})
+
+                    Instances:Create("UIGradient", {
+                        Parent = SubItems["Inactive"].Instance,
+                        Rotation = 90,
+                        Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(108, 108, 108))}
+                    })
+
+                    SubItems["Content"] = Instances:Create("Frame", {
+                        Parent = Items["Content"].Instance,
+                        BackgroundTransparency = 1,
+                        Name = "\0",
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        Size = UDim2New(1, 0, 1, 0),
+                        BorderSizePixel = 0,
+                        Visible = false,
+                        BackgroundColor3 = FromRGB(255, 255, 255)
+                    })
+
+                    Instances:Create("UIListLayout", {
+                        Parent = SubItems["Content"].Instance,
+                        Padding = UDimNew(0, 6),
+                        SortOrder = Enum.SortOrder.LayoutOrder
+                    })
+                end
+
+                function NewSection:Turn(Bool)
+                    if not Bool then
+                        NewSection.Active = false
+                        SubItems["Content"].Instance.Visible = false
+                        SubItems["Text"]:Tween(nil, {TextColor3 = Library.Theme.Text, TextTransparency = 0.5})
+                        SubItems["Text"]:ChangeItemTheme({TextColor3 = "Text"})
+                        return
+                    end
+
+                    if NewSection.Active then
+                        return
+                    end
+
+                    NewSection.Active = true
+
+                    local Descendants = SubItems["Content"].Instance:GetDescendants()
+                    TableInsert(Descendants, SubItems["Content"].Instance)
+
+                    local Batch = {}
+                    local BatchIndex = 0
+                    for Index, Value in Descendants do
+                        local ValueIndex = Tween:GetProperty(Value)
+                        if not ValueIndex then
+                            continue
+                        end
+                        if type(ValueIndex) == "table" then
+                            for _, Property in ValueIndex do
+                                BatchIndex = BatchIndex + 1
+                                local Old = Value[Property]
+                                Value[Property] = 1
+                                Batch[BatchIndex] = {Value, Property, Old}
+                            end
+                        else
+                            BatchIndex = BatchIndex + 1
+                            local Old = Value[ValueIndex]
+                            Value[ValueIndex] = 1
+                            Batch[BatchIndex] = {Value, ValueIndex, Old}
+                        end
+                    end
+
+                    SubItems["Content"].Instance.Visible = true
+
+                    local TweenInfoData = TweenInfo.new(Library.FadeSpeed, Library.Tween.Style, Library.Tween.Direction)
+                    local LastTween
+
+                    for i = 1, BatchIndex do
+                        local Entry = Batch[i]
+                        local Goal = {[Entry[2]] = Entry[3]}
+                        local twn = Tween:Create(Entry[1], TweenInfoData, Goal, true)
+                        twn:Play()
+                        LastTween = twn
+                        if i % 60 == 0 then
+                            task.wait()
+                        end
+                    end
+
+                    SubItems["Text"]:Tween(nil, {TextColor3 = Library.Theme.Accent, TextTransparency = 0})
+                    SubItems["Text"]:ChangeItemTheme({TextColor3 = "Accent"})
+                end
+
+                SubItems["Inactive"]:Connect("MouseButton1Down", function()
+                    for Index, Value in MultiSection.SectionContents do
+                        if Value ~= NewSection then
+                            Value:Turn(false)
+                        end
+                    end
+                    NewSection:Turn(true)
+                end)
+
+                NewSection.Items = SubItems
+
+                TableInsert(MultiSection.SectionContents, setmetatable(NewSection, Library.Sections))
+            end
+
+            MultiSection.SectionContents[1]:Turn(true)
+            TableInsert(MultiSection.Window.Sections, MultiSection)
+            return TableUnpack(MultiSection.SectionContents)
+        end
+
         Library.Pages.Section = function(self, Data)
             Data = Data or { }
 
@@ -4752,6 +5036,267 @@ local Themes = {
             end
 
             return Textbox
+        end
+
+        Library.Sections.Listbox = function(self, Data)
+            Data = Data or {}
+
+            local Listbox = {
+                Window = self.Window,
+                Page = self.Page,
+                Section = self,
+
+                Items = Data.Items or Data.items or { },
+                Multi = Data.Multi or Data.multi or false,
+                Default = Data.Default or Data.default or 1,
+                Flag = Data.Flag or Data.flag or Library:NextFlag(),
+                Callback = Data.Callback or Data.callback or function() end,
+                Size = Data.Size or Data.size or 175,
+
+                Value = { },
+                Options = { },
+                Class = "Listbox",
+            }
+
+            local Items = { } do
+                Items["Listbox"] = Instances:Create("Frame", {
+                    Parent = Listbox.Section.Items["Content"].Instance,
+                    Name = "\0",
+                    BackgroundTransparency = 1,
+                    Size = UDim2New(1, 0, 0, Listbox.Size),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BorderSizePixel = 0,
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })
+
+                Items["RealListbox"] = Instances:Create("ScrollingFrame", {
+                    Parent = Items["Listbox"].Instance,
+                    ScrollBarImageColor3 = FromRGB(184, 212, 255),
+                    Active = true,
+                    AutomaticCanvasSize = Enum.AutomaticSize.Y,
+                    ScrollBarThickness = 1,
+                    AnchorPoint = Vector2New(0, 1),
+                    Size = UDim2New(1, 0, 1, 0),
+                    Name = "\0",
+                    Position = UDim2New(0, 0, 1, 0),
+                    BackgroundColor3 = FromRGB(28, 32, 38),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BorderSizePixel = 0,
+                    CanvasSize = UDim2New(0, 0, 0, 0)
+                })  Items["RealListbox"]:AddToTheme({ScrollBarImageColor3 = "Accent", BackgroundColor3 = "Element"})
+
+                Instances:Create("UICorner", {
+                    Parent = Items["RealListbox"].Instance,
+                    Name = "\0",
+                    CornerRadius = UDimNew(0, 5)
+                })
+
+                Instances:Create("UIListLayout", {
+                    Parent = Items["RealListbox"].Instance,
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                })
+
+                Instances:Create("UIPadding", {
+                    Parent = Items["RealListbox"].Instance,
+                    PaddingBottom = UDimNew(0, 5),
+                    PaddingTop = UDimNew(0, 2)
+                })
+            end
+
+            function Listbox:Set(Option)
+                if Listbox.Multi then
+                    if type(Option) ~= "table" then
+                        return
+                    end
+
+                    Listbox.Value = Option
+
+                    Library.Flags[Listbox.Flag] = Listbox.Value
+
+                    for Index, Value in Option do
+                        local OptionData = Listbox.Options[Value]
+
+                        if not OptionData then
+                            return
+                        end
+
+                        OptionData.Selected = true
+                        OptionData:Toggle("Active")
+                    end
+                else
+                    if not Listbox.Options[Option] then
+                        return
+                    end
+
+                    local OptionData = Listbox.Options[Option]
+
+                    Listbox.Value = OptionData.Name
+
+                    Library.Flags[Listbox.Flag] = Listbox.Value
+
+                    OptionData.Selected = true
+                    OptionData:Toggle("Active")
+
+                    for Index, Value in Listbox.Options do
+                        if Value ~= OptionData then
+                            Value.Selected = false
+                            Value:Toggle("Inactive")
+                        end
+                    end
+                end
+
+                if Listbox.Callback then
+                    Library:SafeCall(Listbox.Callback, Option)
+                end
+            end
+
+            function Listbox:Get()
+                return Listbox.Value
+            end
+
+            function Listbox:SetVisibility(Bool)
+                Items["Listbox"].Instance.Visible = Bool
+            end
+
+            function Listbox:Remove(Option)
+                if Listbox.Options[Option] then
+                    Listbox.Options[Option].Button:Clean()
+                end
+            end
+
+            function Listbox:Refresh(List)
+                for Index, Value in Listbox.Options do
+                    Listbox:Remove(Value.Name)
+                end
+
+                for Index, Value in List do
+                    Listbox:Add(Value)
+                end
+            end
+
+            function Listbox:Add(Option)
+                local OptionButton = Instances:Create("TextButton", {
+                    Parent = Items["RealListbox"].Instance,
+                    FontFace = Library.Font,
+                    TextColor3 = FromRGB(0, 0, 0),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = "",
+                    AutoButtonColor = false,
+                    Name = "\0",
+                    BackgroundTransparency = 1,
+                    BorderSizePixel = 0,
+                    Size = UDim2New(1, 0, 0, 15),
+                    ZIndex = 5,
+                    TextSize = 14,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })
+
+                local OptionText = Instances:Create("TextLabel", {
+                    Parent = OptionButton.Instance,
+                    FontFace = Library.Font,
+                    TextColor3 = FromRGB(200, 200, 200),
+                    TextTransparency = 0.48,
+                    Text = Option,
+                    Name = "\0",
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(1, -10, 1, 0),
+                    Position = UDim2New(0, 5, 0, 0),
+                    BackgroundTransparency = 1,
+                    TextXAlignment = Enum.TextXAlignment.Center,
+                    BorderSizePixel = 0,
+                    ZIndex = 5,
+                    TextSize = 12,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })
+
+                OptionText:AddToTheme({TextColor3 = "Text"})
+
+                Instances:Create("UIStroke", {
+                    Parent = OptionText.Instance,
+                    LineJoinMode = Enum.LineJoinMode.Miter,
+                    Name = "\0"
+                }):AddToTheme({Color = "Text Border"})
+
+                local OptionData = {
+                    Selected = false,
+                    Name = Option,
+                    Text = OptionText,
+                    Button = OptionButton
+                }
+
+                function OptionData:Toggle(State)
+                    if State == "Active" then
+                        OptionData.Text:ChangeItemTheme({TextColor3 = "Accent"})
+                        OptionData.Text:Tween(nil, {TextColor3 = Library.Theme.Accent, TextTransparency = 0})
+                    else
+                        OptionData.Text:ChangeItemTheme({TextColor3 = "Text"})
+                        OptionData.Text:Tween(nil, {TextColor3 = Library.Theme.Text, TextTransparency = 0.48})
+                    end
+                end
+
+                function OptionData:Set()
+                    OptionData.Selected = not OptionData.Selected
+
+                    if Listbox.Multi then
+                        local Index = TableFind(Listbox.Value, OptionData.Name)
+
+                        if Index then
+                            TableRemove(Listbox.Value, Index)
+                        else
+                            TableInsert(Listbox.Value, OptionData.Name)
+                        end
+
+                        OptionData:Toggle(Index and "Inactive" or "Active")
+                    else
+                        if OptionData.Selected then
+                            Listbox.Value = OptionData.Name
+
+                            OptionData:Toggle("Active")
+
+                            for Index, Value in Listbox.Options do
+                                if Value ~= OptionData then
+                                    Value.Selected = false
+                                    Value:Toggle("Inactive")
+                                end
+                            end
+                        else
+                            Listbox.Value = nil
+
+                            OptionData:Toggle("Inactive")
+                        end
+                    end
+
+                    if Listbox.Callback then
+                        Library:SafeCall(Listbox.Callback, Listbox.Value)
+                    end
+                end
+
+                OptionButton:Connect("MouseButton1Down", function()
+                    OptionData:Set()
+                end)
+
+                Listbox.Options[Option] = OptionData
+                return OptionData
+            end
+
+            for Index, Value in Listbox.Items do
+                Listbox:Add(Value)
+            end
+
+            if Listbox.Default then
+                if Listbox.Multi then
+                    Listbox:Set(Listbox.Default)
+                else
+                    Listbox:Set(Listbox.Default)
+                end
+            end
+
+            Library.SetFlags[Listbox.Flag] = function(Value)
+                Listbox:Set(Value)
+            end
+
+            return Listbox
         end
     end
 
