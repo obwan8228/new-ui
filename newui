@@ -185,17 +185,17 @@ local Library do
         ["RightAlt"]          = "RightAlt"
     }
 
-    local Themes = {
-        ["Preset"] = {
-            ["Background"] = FromRGB(14, 17, 15),
-            ["Inline"] = FromRGB(16, 19, 16),
-            ["Outline"] = FromRGB(23, 30, 36),
-            ["Text"] = FromRGB(235, 235, 235),
-            ["Dark Text"] = FromRGB(100, 100, 100),
-            ["Element"] = FromRGB(30, 36, 31),
-            ["Accent"] = FromRGB(54, 85, 120)
-        }
+local Themes = {
+    ["Preset"] = {
+        ["Background"] = FromRGB(22, 22, 22),
+        ["Inline"] = FromRGB(30, 30, 30),
+        ["Outline"] = FromRGB(50, 50, 50),
+        ["Text"] = FromRGB(224, 224, 224),
+        ["Dark Text"] = FromRGB(161, 161, 161),
+        ["Element"] = FromRGB(33, 33, 33),
+        ["Accent"] = FromRGB(119, 128, 184)
     }
+}
 
     Library.Theme = TableClone(Themes["Preset"])
 
