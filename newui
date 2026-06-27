@@ -3121,7 +3121,8 @@ local Themes = {
             Instances:Create("UIPadding", {
                 Parent = ButtonItems["Button"].Instance,
                 Name = "\0",
-                PaddingRight = UDimNew(0, 12)
+                PaddingLeft = UDimNew(0, 9),
+                PaddingRight = UDimNew(0, 16)
             })
 
             ButtonItems["Icon"] = Instances:Create("ImageLabel", {
@@ -3132,7 +3133,7 @@ local Themes = {
                 AnchorPoint = Vector2New(0, 0.5),
                 Image = "rbxassetid://"..SubPageIcon,
                 BackgroundTransparency = 1,
-                Position = UDim2New(0, 9, 0.5, 0),
+                Position = UDim2New(0, 0, 0.5, 0),
                 Size = UDim2New(0, 16, 0, 16),
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
@@ -3146,7 +3147,7 @@ local Themes = {
                 BorderColor3 = FromRGB(0, 0, 0),
                 Text = SubPageName,
                 BackgroundTransparency = 1,
-                Position = UDim2New(0, 31, 0.5, -8),
+                Position = UDim2New(0, 22, 0.5, -8),
                 Size = UDim2New(0, 0, 0, 16),
                 AutomaticSize = Enum.AutomaticSize.X,
                 BorderSizePixel = 0,
