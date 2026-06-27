@@ -3106,8 +3106,8 @@ local Themes = {
                 BorderColor3 = FromRGB(0, 0, 0),
                 Text = "",
                 AutoButtonColor = false,
-                Size = UDim2New(0, 0, 1, 0),
-                AutomaticSize = Enum.AutomaticSize.X,
+                ClipsDescendants = true,
+                Size = UDim2New(0, 120, 1, 0),
                 BorderSizePixel = 0,
                 TextSize = 14,
                 BackgroundColor3 = FromRGB(13, 15, 18)
@@ -3119,33 +3119,54 @@ local Themes = {
                 CornerRadius = UDimNew(0, 6)
             })
 
-            ButtonItems["Icon"] = Instances:Create("ImageLabel", {
+            -- Inner holder to center icon+text as a group inside the button
+            ButtonItems["InnerHolder"] = Instances:Create("Frame", {
                 Parent = ButtonItems["Button"].Instance,
                 Name = "\0",
+                BackgroundTransparency = 1,
+                AnchorPoint = Vector2New(0.5, 0.5),
+                Position = UDim2New(0.5, 0, 0.5, 0),
+                Size = UDim2New(0, 0, 0, 16),
+                AutomaticSize = Enum.AutomaticSize.X,
+                BorderSizePixel = 0,
+            })
+
+            Instances:Create("UIListLayout", {
+                Parent = ButtonItems["InnerHolder"].Instance,
+                Name = "\0",
+                FillDirection = Enum.FillDirection.Horizontal,
+                HorizontalAlignment = Enum.HorizontalAlignment.Center,
+                VerticalAlignment = Enum.VerticalAlignment.Center,
+                Padding = UDimNew(0, 6),
+                SortOrder = Enum.SortOrder.LayoutOrder,
+            })
+
+            ButtonItems["Icon"] = Instances:Create("ImageLabel", {
+                Parent = ButtonItems["InnerHolder"].Instance,
+                Name = "\0",
+                LayoutOrder = 1,
                 ImageTransparency = 0.5,
                 BorderColor3 = FromRGB(0, 0, 0),
-                AnchorPoint = Vector2New(0, 0.5),
                 Image = "rbxassetid://"..SubPageIcon,
                 BackgroundTransparency = 1,
-                Position = UDim2New(0, 9, 0.5, 0),
                 Size = UDim2New(0, 16, 0, 16),
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
             }) ButtonItems["Icon"]:AddToTheme({ImageColor3 = "Text"})
 
             ButtonItems["Text"] = Instances:Create("TextLabel", {
-                Parent = ButtonItems["Button"].Instance,
+                Parent = ButtonItems["InnerHolder"].Instance,
                 Name = "\0",
+                LayoutOrder = 2,
                 FontFace = Library.Font,
                 TextColor3 = FromRGB(200, 200, 200),
                 BorderColor3 = FromRGB(0, 0, 0),
                 Text = SubPageName,
                 BackgroundTransparency = 1,
-                Position = UDim2New(0, 31, 0.5, -8),
                 Size = UDim2New(0, 0, 0, 16),
                 AutomaticSize = Enum.AutomaticSize.X,
                 BorderSizePixel = 0,
-                TextXAlignment = Enum.TextXAlignment.Left,
+                TextXAlignment = Enum.TextXAlignment.Center,
                 TextTruncate = Enum.TextTruncate.AtEnd,
                 TextSize = 14,
                 BackgroundColor3 = FromRGB(255, 255, 255)
@@ -3225,34 +3246,51 @@ local Themes = {
 
             -- Dynamically resize all subpage buttons based on count
             local subCount = #self.SubPages
+            local holderPadding = 24 -- 12px padding on each side of SubPagesHolder
+            local minGap = 8 -- minimum gap between buttons so they never touch
+            local maxButtonWidth = 200 -- max width for a single subpage button
+            local minButtonWidth = 60 -- minimum width so buttons stay usable
+
+            -- Scale factor for icon/text sizing
+            local scaleFactor = MathClamp(1 - ((subCount - 1) * 0.12), 0.55, 1)
+
             local maxIconSize = 16
             local minIconSize = 10
             local maxTextSize = 14
             local minTextSize = 10
-            local maxPadding = 9
-            local minPadding = 4
-
-            -- Scale factor: 1 subpage = full size, shrinks as more are added (floor at ~6+)
-            local scaleFactor = MathClamp(1 - ((subCount - 1) * 0.15), 0.55, 1)
 
             local iconSize = MathFloor(minIconSize + (maxIconSize - minIconSize) * scaleFactor)
             local textSize = MathFloor(minTextSize + (maxTextSize - minTextSize) * scaleFactor)
-            local padOffset = MathFloor(minPadding + (maxPadding - minPadding) * scaleFactor)
+
+            -- Calculate button width from available space
+            -- We use deferred sizing: get holder width, subtract padding and gaps, divide by count
+            local holderWidth = self.Items["SubPagesHolder"].Instance.AbsoluteSize.X
+            if holderWidth <= 0 then holderWidth = 400 end -- fallback if not rendered yet
+
+            local availableWidth = holderWidth - holderPadding
+            local totalGaps = (subCount - 1) * minGap
+            local buttonWidth = MathFloor((availableWidth - totalGaps) / subCount)
+            buttonWidth = MathClamp(buttonWidth, minButtonWidth, maxButtonWidth)
+
+            -- Recalculate gap so buttons are evenly spaced and don't touch
+            local totalButtonsWidth = buttonWidth * subCount
+            local remainingSpace = availableWidth - totalButtonsWidth
+            local gap = (subCount > 1) and MathFloor(remainingSpace / (subCount - 1)) or 0
+            gap = (subCount > 1) and MathClamp(gap, minGap, 40) or 0
 
             for _, sp in self.SubPages do
                 local btn = sp.SubPageButtonItems
                 if btn then
+                    btn["Button"].Instance.Size = UDim2New(0, buttonWidth, 1, 0)
                     btn["Icon"].Instance.Size = UDim2New(0, iconSize, 0, iconSize)
                     btn["Text"].Instance.TextSize = textSize
-                    btn["Icon"].Instance.Position = UDim2New(0, padOffset, 0.5, 0)
-                    btn["Text"].Instance.Position = UDim2New(0, padOffset + iconSize + 6, 0.5, -MathFloor(textSize / 2))
+                    btn["InnerHolder"].Instance.Size = UDim2New(0, 0, 0, iconSize)
                 end
             end
 
             -- Update spacing between buttons
-            local listPadding = MathFloor(8 * scaleFactor)
             if self.Items["SubPagesListLayout"] then
-                self.Items["SubPagesListLayout"].Instance.Padding = UDimNew(0, listPadding)
+                self.Items["SubPagesListLayout"].Instance.Padding = UDimNew(0, gap)
             end
 
             if #self.SubPages == 1 then
