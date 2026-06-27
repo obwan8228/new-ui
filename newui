@@ -3043,6 +3043,7 @@ local Themes = {
                 self.Items["SubPagesHolder"] = Instances:Create("Frame", {
                     Parent = self.Items["Page"].Instance,
                     Name = "\0",
+                    ClipsDescendants = true,
                     BackgroundTransparency = 1,
                     BorderColor3 = FromRGB(0, 0, 0),
                     Position = UDim2New(0, 0, 0, 0),
@@ -3247,36 +3248,42 @@ local Themes = {
             -- Dynamically resize all subpage buttons based on count
             local subCount = #self.SubPages
             local holderPadding = 24 -- 12px padding on each side of SubPagesHolder
-            local minGap = 8 -- minimum gap between buttons so they never touch
+            local minGap = 4 -- minimum gap between buttons so they never touch
             local maxButtonWidth = 200 -- max width for a single subpage button
-            local minButtonWidth = 60 -- minimum width so buttons stay usable
 
             -- Scale factor for icon/text sizing
-            local scaleFactor = MathClamp(1 - ((subCount - 1) * 0.12), 0.55, 1)
+            local scaleFactor = MathClamp(1 - ((subCount - 1) * 0.12), 0.45, 1)
 
             local maxIconSize = 16
             local minIconSize = 10
             local maxTextSize = 14
-            local minTextSize = 10
+            local minTextSize = 9
 
             local iconSize = MathFloor(minIconSize + (maxIconSize - minIconSize) * scaleFactor)
             local textSize = MathFloor(minTextSize + (maxTextSize - minTextSize) * scaleFactor)
 
-            -- Calculate button width from available space
-            -- We use deferred sizing: get holder width, subtract padding and gaps, divide by count
+            -- Calculate button width from available space — buttons MUST fit inside
             local holderWidth = self.Items["SubPagesHolder"].Instance.AbsoluteSize.X
             if holderWidth <= 0 then holderWidth = 400 end -- fallback if not rendered yet
 
             local availableWidth = holderWidth - holderPadding
             local totalGaps = (subCount - 1) * minGap
             local buttonWidth = MathFloor((availableWidth - totalGaps) / subCount)
-            buttonWidth = MathClamp(buttonWidth, minButtonWidth, maxButtonWidth)
+            buttonWidth = math.min(buttonWidth, maxButtonWidth) -- cap max, no min clamp so they always fit
 
-            -- Recalculate gap so buttons are evenly spaced and don't touch
+            -- Recalculate gap from leftover space
             local totalButtonsWidth = buttonWidth * subCount
             local remainingSpace = availableWidth - totalButtonsWidth
             local gap = (subCount > 1) and MathFloor(remainingSpace / (subCount - 1)) or 0
             gap = (subCount > 1) and MathClamp(gap, minGap, 40) or 0
+
+            -- Inner content width: button width minus some internal padding
+            local innerPad = MathFloor(MathClamp(buttonWidth * 0.1, 4, 12))
+            local innerWidth = buttonWidth - (innerPad * 2)
+            -- Text gets whatever space is left after the icon and the 6px gap between them
+            local textWidth = math.max(innerWidth - iconSize - 6, 0)
+            -- Hide text entirely if button is too narrow to show it
+            local showText = textWidth >= 14
 
             for _, sp in self.SubPages do
                 local btn = sp.SubPageButtonItems
@@ -3284,7 +3291,11 @@ local Themes = {
                     btn["Button"].Instance.Size = UDim2New(0, buttonWidth, 1, 0)
                     btn["Icon"].Instance.Size = UDim2New(0, iconSize, 0, iconSize)
                     btn["Text"].Instance.TextSize = textSize
-                    btn["InnerHolder"].Instance.Size = UDim2New(0, 0, 0, iconSize)
+                    btn["Text"].Instance.Visible = showText
+                    btn["Text"].Instance.Size = UDim2New(0, showText and textWidth or 0, 0, textSize + 2)
+                    btn["Text"].Instance.AutomaticSize = Enum.AutomaticSize.None
+                    btn["InnerHolder"].Instance.Size = UDim2New(0, innerWidth, 0, iconSize)
+                    btn["InnerHolder"].Instance.AutomaticSize = Enum.AutomaticSize.None
                 end
             end
 
