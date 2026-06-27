@@ -3060,10 +3060,11 @@ local Themes = {
                     PaddingLeft = UDimNew(0, 12)
                 })
 
-                Instances:Create("UIListLayout", {
+                self.Items["SubPagesListLayout"] = Instances:Create("UIListLayout", {
                     Parent = self.Items["SubPagesHolder"].Instance,
                     Name = "\0",
                     FillDirection = Enum.FillDirection.Horizontal,
+                    HorizontalAlignment = Enum.HorizontalAlignment.Center,
                     VerticalAlignment = Enum.VerticalAlignment.Center,
                     Padding = UDimNew(0, 8),
                     SortOrder = Enum.SortOrder.LayoutOrder
@@ -3118,13 +3119,6 @@ local Themes = {
                 CornerRadius = UDimNew(0, 6)
             })
 
-            Instances:Create("UIPadding", {
-                Parent = ButtonItems["Button"].Instance,
-                Name = "\0",
-                PaddingLeft = UDimNew(0, 9),
-                PaddingRight = UDimNew(0, 16)
-            })
-
             ButtonItems["Icon"] = Instances:Create("ImageLabel", {
                 Parent = ButtonItems["Button"].Instance,
                 Name = "\0",
@@ -3133,7 +3127,7 @@ local Themes = {
                 AnchorPoint = Vector2New(0, 0.5),
                 Image = "rbxassetid://"..SubPageIcon,
                 BackgroundTransparency = 1,
-                Position = UDim2New(0, 0, 0.5, 0),
+                Position = UDim2New(0, 9, 0.5, 0),
                 Size = UDim2New(0, 16, 0, 16),
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
@@ -3147,7 +3141,7 @@ local Themes = {
                 BorderColor3 = FromRGB(0, 0, 0),
                 Text = SubPageName,
                 BackgroundTransparency = 1,
-                Position = UDim2New(0, 22, 0.5, -8),
+                Position = UDim2New(0, 31, 0.5, -8),
                 Size = UDim2New(0, 0, 0, 16),
                 AutomaticSize = Enum.AutomaticSize.X,
                 BorderSizePixel = 0,
@@ -3228,6 +3222,38 @@ local Themes = {
             end)
 
             TableInsert(self.SubPages, SubPage)
+
+            -- Dynamically resize all subpage buttons based on count
+            local subCount = #self.SubPages
+            local maxIconSize = 16
+            local minIconSize = 10
+            local maxTextSize = 14
+            local minTextSize = 10
+            local maxPadding = 9
+            local minPadding = 4
+
+            -- Scale factor: 1 subpage = full size, shrinks as more are added (floor at ~6+)
+            local scaleFactor = MathClamp(1 - ((subCount - 1) * 0.15), 0.55, 1)
+
+            local iconSize = MathFloor(minIconSize + (maxIconSize - minIconSize) * scaleFactor)
+            local textSize = MathFloor(minTextSize + (maxTextSize - minTextSize) * scaleFactor)
+            local padOffset = MathFloor(minPadding + (maxPadding - minPadding) * scaleFactor)
+
+            for _, sp in self.SubPages do
+                local btn = sp.SubPageButtonItems
+                if btn then
+                    btn["Icon"].Instance.Size = UDim2New(0, iconSize, 0, iconSize)
+                    btn["Text"].Instance.TextSize = textSize
+                    btn["Icon"].Instance.Position = UDim2New(0, padOffset, 0.5, 0)
+                    btn["Text"].Instance.Position = UDim2New(0, padOffset + iconSize + 6, 0.5, -MathFloor(textSize / 2))
+                end
+            end
+
+            -- Update spacing between buttons
+            local listPadding = MathFloor(8 * scaleFactor)
+            if self.Items["SubPagesListLayout"] then
+                self.Items["SubPagesListLayout"].Instance.Padding = UDimNew(0, listPadding)
+            end
 
             if #self.SubPages == 1 then
                 SubPage:Turn(true)
