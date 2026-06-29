@@ -434,8 +434,36 @@ local Themes = {
                 local ScreenSize = Gui.Parent.AbsoluteSize
                 local GuiSize = Gui.AbsoluteSize
         
-                NewX = MathClamp(NewX, 0, ScreenSize.X - GuiSize.X)
-                NewY = MathClamp(NewY, 0, ScreenSize.Y - GuiSize.Y)
+                local MinX = 0
+                
+                -- Check if a sidebar is visible to prevent it from going off the left edge
+                if Library.CurrentPage and Gui ~= Library.WatermarkInstance then
+                    local p = Library.CurrentPage
+                    if p.IsSubPage and p.ParentPage and p.ParentPage.Items["SubPagesHolder"] and p.ParentPage.Items["SubPagesHolder"].Instance.Visible then
+                        MinX = 60
+                    elseif not p.IsSubPage and p.SubPages and #p.SubPages > 0 and p.Items["SubPagesHolder"] and p.Items["SubPagesHolder"].Instance.Visible then
+                        MinX = 60
+                    end
+                end
+
+                local MinY = 0
+                local MaxY = ScreenSize.Y - GuiSize.Y
+                local MaxX = ScreenSize.X - GuiSize.X
+                
+                -- Prevent the main UI window from touching the Watermark at the top of the screen
+                if Gui == Library.WindowInstance then
+                    MinY = 55
+                end
+                
+                -- Let the watermark be dragged slightly off-screen to save space on mobile
+                if Gui == Library.WatermarkInstance then
+                    MinX = -20
+                    MaxX = ScreenSize.X - GuiSize.X + 20
+                    MaxY = ScreenSize.Y - GuiSize.Y + 20
+                end
+
+                NewX = MathClamp(NewX, math.min(MinX, MaxX), math.max(MinX, MaxX))
+                NewY = MathClamp(NewY, math.min(MinY, MaxY), math.max(MinY, MaxY))
         
                 self:Tween(TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2New(0, NewX, 0, NewY)})
             end
@@ -1161,7 +1189,7 @@ local Themes = {
             function Colorpicker:Update(IsFromAlpha)
                 local Hue, Saturation, Value = Colorpicker.Hue, Colorpicker.Saturation, Colorpicker.Value
                 Colorpicker.Color = FromHSV(Hue, Saturation, Value)
-                Colorpicker.HexValue = Colorpicker.Color:ToHex()
+                Colorpicker.HexValue = string.format("%02X%02X%02X", Colorpicker.Color.R * 255, Colorpicker.Color.G * 255, Colorpicker.Color.B * 255)
 
                 Library.Flags[Colorpicker.Flag] = {
                     Color = Colorpicker.Color,
@@ -1972,6 +2000,8 @@ local Themes = {
 
                 Items["MainFrame"]:MakeDraggable()
                 Items["MainFrame"]:MakeResizeable(Vector2New(Items["MainFrame"].Instance.AbsoluteSize.X, Items["MainFrame"].Instance.AbsoluteSize.Y), Vector2New(9999, 9999))
+                
+                Library.WindowInstance = Items["MainFrame"].Instance
 
                 Items["Shadow"] = Instances:Create("ImageLabel", {
                     Name = "\0",
@@ -2408,7 +2438,8 @@ local Themes = {
                     Name = ""..#Library.Sections,
                     Items = { },
                     IsSettings = true,
-                    Elements = { }
+                    Elements = { },
+                    Page = "Settings"
                 }
     
                 local SettingsItems = { }
@@ -2629,6 +2660,130 @@ local Themes = {
                     Settings.Items = SettingsItems
                     setmetatable(Settings, Library.Sections)
     
+                    -- Watermark Feature
+                    local WatermarkTextStr = (Window.SubTitle ~= "" and Window.SubTitle) or "German Yerba Mate"
+                    
+                    local Watermark = Instances:Create("Frame", {
+                        Parent = Library.Holder.Instance,
+                        Name = "\0",
+                        Size = UDim2New(0, 0, 0, 32),
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        BorderSizePixel = 0,
+                        Position = UDim2New(0.5, -100, 0, 10),
+                        AutomaticSize = Enum.AutomaticSize.X,
+                        BackgroundColor3 = FromRGB(13, 15, 18),
+                        ZIndex = 50,
+                        Visible = true
+                    })  Watermark:AddToTheme({BackgroundColor3 = "Background"})
+                    
+                    Library.WatermarkInstance = Watermark.Instance
+                    Watermark:MakeDraggable()
+                    
+                    local Shadow = Instances:Create("ImageLabel", {
+                        Name = "\0",
+                        Parent = Library.Holder.Instance,
+                        ImageColor3 = Color3.fromRGB(0, 0, 0),
+                        ScaleType = Enum.ScaleType.Slice,
+                        ImageTransparency = 0.4,
+                        Size = UDim2.new(0, 0, 0, 0),
+                        ZIndex = 49,
+                        Image = "http://www.roblox.com/asset/?id=18245826428",
+                        BackgroundTransparency = 1,
+                        Position = UDim2.new(0, 0, 0, 0),
+                        BackgroundColor3 = Library.Theme["Accent"],
+                        BorderSizePixel = 0,
+                        SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79))
+                    })  Shadow:AddToTheme({ImageColor3 = 'Accent'})
+                    
+                    local UpdateShadow = function()
+                        if Watermark.Instance.Visible then
+                            Shadow.Instance.Visible = true
+                            Shadow.Instance.Size = UDim2.new(0, Watermark.Instance.AbsoluteSize.X + 25, 0, Watermark.Instance.AbsoluteSize.Y + 25)
+                            
+                            local Pos = Watermark.Instance.Position
+                            Shadow.Instance.Position = UDim2.new(
+                                Pos.X.Scale, Pos.X.Offset - 12.5,
+                                Pos.Y.Scale, Pos.Y.Offset - 12.5
+                            )
+                        else
+                            Shadow.Instance.Visible = false
+                        end
+                    end
+                    
+                    Watermark.Instance:GetPropertyChangedSignal("AbsoluteSize"):Connect(UpdateShadow)
+                    Watermark.Instance:GetPropertyChangedSignal("Position"):Connect(UpdateShadow)
+                    Watermark.Instance:GetPropertyChangedSignal("Visible"):Connect(UpdateShadow)
+                    
+                    Instances:Create("UICorner", {
+                        Parent = Watermark.Instance,
+                        Name = "\0",
+                        CornerRadius = UDimNew(0, 6)
+                    })
+                    
+                    local WatermarkStroke = Instances:Create("UIStroke", {
+                        Parent = Watermark.Instance,
+                        Name = "\0",
+                        Color = Library.Theme.Accent,
+                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                    })  WatermarkStroke:AddToTheme({Color = "Accent"})
+                    
+                    Instances:Create("UIGradient", {
+                        Parent = WatermarkStroke.Instance,
+                        Name = "\0",
+                        Rotation = 90,
+                        Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(120, 120, 120))}
+                    })
+                    
+                    Instances:Create("UIPadding", {
+                        Parent = Watermark.Instance,
+                        Name = "\0",
+                        PaddingTop = UDimNew(0, 4),
+                        PaddingBottom = UDimNew(0, 4),
+                        PaddingRight = UDimNew(0, 8),
+                        PaddingLeft = UDimNew(0, 8)
+                    })
+
+                    Instances:Create("UIListLayout", {
+                        Parent = Watermark.Instance,
+                        Name = "\0",
+                        FillDirection = Enum.FillDirection.Horizontal,
+                        VerticalAlignment = Enum.VerticalAlignment.Center,
+                        Padding = UDimNew(0, 8),
+                        SortOrder = Enum.SortOrder.LayoutOrder
+                    })
+                    
+                    Instances:Create("UIGradient", {
+                        Parent = Watermark.Instance,
+                        Name = "\0",
+                        Rotation = 90,
+                        Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(200, 200, 200))}
+                    })
+
+                    Instances:Create("ImageLabel", {
+                        Parent = Watermark.Instance,
+                        Name = "\0",
+                        Size = UDim2New(0, 24, 0, 24),
+                        BackgroundTransparency = 1,
+                        Image = "rbxassetid://91160057047026",
+                        ZIndex = 51,
+                        LayoutOrder = 1
+                    }):AddToTheme({ImageColor3 = "Text"})
+                    
+                    Instances:Create("TextLabel", {
+                        Parent = Watermark.Instance,
+                        Name = "\0",
+                        Size = UDim2New(0, 0, 0, 24),
+                        AutomaticSize = Enum.AutomaticSize.X,
+                        BackgroundTransparency = 1,
+                        Text = WatermarkTextStr,
+                        TextColor3 = FromRGB(200, 200, 200),
+                        TextSize = 16,
+                        FontFace = Library.Font,
+                        ZIndex = 51,
+                        LayoutOrder = 2
+                    }):AddToTheme({TextColor3 = "Text"})
+
+
                     for Index, Value in Library.Theme do 
                         Settings:Label(Index):Colorpicker({
                             Flag = Index,
@@ -2639,6 +2794,7 @@ local Themes = {
                             end
                         })
                     end
+
                 end
 
                 if IsMobile then 
@@ -2945,8 +3101,10 @@ local Themes = {
                 Page.Active = Bool 
                 
                 Debounce = true
-                Items["Page"].Instance.Visible = Bool 
-                Items["Page"].Instance.Parent = Bool and Page.Window.Items["Content"].Instance or Library.UnusedHolder.Instance
+                if Bool then
+                    Items["Page"].Instance.Visible = true
+                    Items["Page"].Instance.Parent = Page.Window.Items["Content"].Instance
+                end
 
                 if Page.Active then
                     Items["Icon"]:ChangeItemTheme({ImageColor3 = function()
@@ -2959,6 +3117,33 @@ local Themes = {
                     Items["Gradient"].Instance.Enabled = true
 
                     Library.CurrentPage = Page.ActiveSubPage or Page
+
+                    if Items["SubPagesHolder"] then
+                        Items["SubPagesHolder"].Instance.Visible = true
+                        Items["SubPagesHolder"].Instance.Position = UDim2New(0, -10, 0, 15)
+                        Items["SubPagesHolder"]:Tween(TweenInfo.new(0.75, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, -10, 0, 0)})
+                        
+                        -- Manually tween subpage buttons since CanvasGroup may be bugged for the user
+                        for _, SubPage in Page.SubPages do
+                            if SubPage.SubPageButtonItems then
+                                local btn = SubPage.SubPageButtonItems["Button"]
+                                local icon = SubPage.SubPageButtonItems["Icon"]
+                                local shadow = SubPage.SubPageButtonItems["Shadow"]
+                                
+                                local btnTarget = SubPage.Active and 0 or 0.7
+                                local iconTarget = SubPage.Active and 0 or 0.4
+                                local shadowTarget = SubPage.Active and 0 or 1
+                                
+                                btn.Instance.BackgroundTransparency = 1
+                                icon.Instance.ImageTransparency = 1
+                                shadow.Instance.ImageTransparency = 1
+                                
+                                btn:Tween(TweenInfo.new(0.75, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {BackgroundTransparency = btnTarget})
+                                icon:Tween(TweenInfo.new(0.75, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = iconTarget})
+                                shadow:Tween(TweenInfo.new(0.75, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {ImageTransparency = shadowTarget})
+                            end
+                        end
+                    end
                 else
                     Items["Icon"]:ChangeItemTheme({ImageColor3 = "Text"})
 
@@ -2966,6 +3151,22 @@ local Themes = {
                     Items["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Text, ImageTransparency = 0.5})
                     Items["Page"]:Tween(TweenInfo.new(0.75, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {Position = UDim2New(0, 0, 0, 67)})
                     Items["Gradient"].Instance.Enabled = false
+                    
+                    if Items["SubPagesHolder"] then
+                        Items["SubPagesHolder"]:Tween(TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2New(0, -10, 0, 15)})
+                        
+                        for _, SubPage in Page.SubPages do
+                            if SubPage.SubPageButtonItems then
+                                local btn = SubPage.SubPageButtonItems["Button"]
+                                local icon = SubPage.SubPageButtonItems["Icon"]
+                                local shadow = SubPage.SubPageButtonItems["Shadow"]
+                                
+                                btn:Tween(TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {BackgroundTransparency = 1})
+                                icon:Tween(TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 1})
+                                shadow:Tween(TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {ImageTransparency = 1})
+                            end
+                        end
+                    end
                 end
 
                 local AllInstances = Items["Page"].Instance:GetDescendants()
@@ -2989,9 +3190,27 @@ local Themes = {
                     end
                 end
 
-                Library:Connect(NewTween.Tween.Completed, function()
+                if NewTween then
+                    Library:Connect(NewTween.Tween.Completed, function()
+                        Debounce = false
+                        if not Bool then
+                            Items["Page"].Instance.Visible = false
+                            Items["Page"].Instance.Parent = Library.UnusedHolder.Instance
+                            if Items["SubPagesHolder"] then
+                                Items["SubPagesHolder"].Instance.Visible = false
+                            end
+                        end
+                    end)
+                else
                     Debounce = false
-                end)
+                    if not Bool then
+                        Items["Page"].Instance.Visible = false
+                        Items["Page"].Instance.Parent = Library.UnusedHolder.Instance
+                        if Items["SubPagesHolder"] then
+                            Items["SubPagesHolder"].Instance.Visible = false
+                        end
+                    end
+                end
             end
 
             local PageSearchData = Library.SearchItems[Page]
@@ -3040,52 +3259,53 @@ local Themes = {
                 self.Items["LeftColumn"].Instance.Parent = Library.UnusedHolder.Instance
                 self.Items["RightColumn"].Instance.Parent = Library.UnusedHolder.Instance
 
+                -- Vertical sidebar outside the UI, to the left of MainFrame
                 self.Items["SubPagesHolder"] = Instances:Create("Frame", {
-                    Parent = self.Items["Page"].Instance,
+                    Parent = self.Window.Items["MainFrame"].Instance,
                     Name = "\0",
-                    ClipsDescendants = true,
+                    ClipsDescendants = false,
                     BackgroundTransparency = 1,
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Position = UDim2New(0, 0, 0, 0),
-                    Size = UDim2New(1, 0, 0, 42),
                     BorderSizePixel = 0,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
+                    AnchorPoint = Vector2New(1, 0),
+                    Position = UDim2New(0, -10, 0, 15), -- Start slightly lower for slide up animation
+                    Size = UDim2New(0, 50, 1, 0),
+                    Visible = false
                 })
 
                 Instances:Create("UIPadding", {
                     Parent = self.Items["SubPagesHolder"].Instance,
                     Name = "\0",
-                    PaddingTop = UDimNew(0, 8),
-                    PaddingBottom = UDimNew(0, 4),
-                    PaddingRight = UDimNew(0, 12),
-                    PaddingLeft = UDimNew(0, 12)
+                    PaddingTop = UDimNew(0, 0),
+                    PaddingBottom = UDimNew(0, 8),
+                    PaddingRight = UDimNew(0, 0),
+                    PaddingLeft = UDimNew(0, 0)
                 })
 
-                self.Items["SubPagesListLayout"] = Instances:Create("UIListLayout", {
+                Instances:Create("UIListLayout", {
                     Parent = self.Items["SubPagesHolder"].Instance,
                     Name = "\0",
-                    FillDirection = Enum.FillDirection.Horizontal,
+                    FillDirection = Enum.FillDirection.Vertical,
                     HorizontalAlignment = Enum.HorizontalAlignment.Center,
-                    VerticalAlignment = Enum.VerticalAlignment.Center,
-                    Padding = UDimNew(0, 8),
+                    VerticalAlignment = Enum.VerticalAlignment.Top,
+                    Padding = UDimNew(0, 6),
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
 
+                -- Content area takes full width since sidebar is outside
                 self.Items["SubPagesContent"] = Instances:Create("Frame", {
                     Parent = self.Items["Page"].Instance,
                     Name = "\0",
                     ClipsDescendants = true,
                     BackgroundTransparency = 1,
                     BorderColor3 = FromRGB(0, 0, 0),
-                    Position = UDim2New(0, 0, 0, 42),
-                    Size = UDim2New(1, 0, 1, -42),
+                    Position = UDim2New(0, 0, 0, 0),
+                    Size = UDim2New(1, 0, 1, 0),
                     BorderSizePixel = 0,
                     BackgroundColor3 = FromRGB(255, 255, 255)
                 })
             end
 
             local SubPage = self.Window:Page(Data)
-            local SubPageName = Data.Name or Data.name or "SubPage"
             local SubPageIcon = Data.Icon or Data.icon or "131145598162617"
             local ButtonItems = { }
 
@@ -3099,6 +3319,7 @@ local Themes = {
             SubPage.Items["Inactive"].Instance.Visible = false
             SubPage.Items["Inactive"].Instance.Parent = Library.UnusedHolder.Instance
 
+            -- Subpage button styled like page buttons, slightly bigger
             ButtonItems["Button"] = Instances:Create("TextButton", {
                 Parent = self.Items["SubPagesHolder"].Instance,
                 Name = "\0",
@@ -3107,10 +3328,10 @@ local Themes = {
                 BorderColor3 = FromRGB(0, 0, 0),
                 Text = "",
                 AutoButtonColor = false,
-                ClipsDescendants = true,
-                Size = UDim2New(0, 120, 1, 0),
+                Size = UDim2New(0, 36, 0, 36),
                 BorderSizePixel = 0,
                 TextSize = 14,
+                BackgroundTransparency = 0.7,
                 BackgroundColor3 = FromRGB(13, 15, 18)
             }) ButtonItems["Button"]:AddToTheme({BackgroundColor3 = "Background"})
 
@@ -3120,58 +3341,51 @@ local Themes = {
                 CornerRadius = UDimNew(0, 6)
             })
 
-            -- Inner holder to center icon+text as a group inside the button
-            ButtonItems["InnerHolder"] = Instances:Create("Frame", {
+            ButtonItems["ButtonGradient"] = Instances:Create("UIGradient", {
                 Parent = ButtonItems["Button"].Instance,
                 Name = "\0",
-                BackgroundTransparency = 1,
-                AnchorPoint = Vector2New(0.5, 0.5),
-                Position = UDim2New(0.5, 0, 0.5, 0),
-                Size = UDim2New(0, 0, 0, 16),
-                AutomaticSize = Enum.AutomaticSize.X,
-                BorderSizePixel = 0,
-            })
-
-            Instances:Create("UIListLayout", {
-                Parent = ButtonItems["InnerHolder"].Instance,
-                Name = "\0",
-                FillDirection = Enum.FillDirection.Horizontal,
-                HorizontalAlignment = Enum.HorizontalAlignment.Center,
-                VerticalAlignment = Enum.VerticalAlignment.Center,
-                Padding = UDimNew(0, 6),
-                SortOrder = Enum.SortOrder.LayoutOrder,
+                Enabled = false,
+                Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(170, 170, 170))}
             })
 
             ButtonItems["Icon"] = Instances:Create("ImageLabel", {
-                Parent = ButtonItems["InnerHolder"].Instance,
+                Parent = ButtonItems["Button"].Instance,
                 Name = "\0",
-                LayoutOrder = 1,
-                ImageTransparency = 0.5,
+                ImageTransparency = 0.4,
                 BorderColor3 = FromRGB(0, 0, 0),
+                AnchorPoint = Vector2New(0.5, 0.5),
+                Position = UDim2New(0.5, 0, 0.5, 0),
                 Image = "rbxassetid://"..SubPageIcon,
                 BackgroundTransparency = 1,
-                Size = UDim2New(0, 16, 0, 16),
+                Size = UDim2New(0, 20, 0, 20),
+                ZIndex = 2,
                 BorderSizePixel = 0,
                 BackgroundColor3 = FromRGB(255, 255, 255)
-            }) ButtonItems["Icon"]:AddToTheme({ImageColor3 = "Text"})
+            }) ButtonItems["Icon"]:AddToTheme({ImageColor3 = function() return FromRGB(255, 255, 255) end})
 
-            ButtonItems["Text"] = Instances:Create("TextLabel", {
-                Parent = ButtonItems["InnerHolder"].Instance,
+            ButtonItems["IconGradient"] = Instances:Create("UIGradient", {
+                Parent = ButtonItems["Icon"].Instance,
                 Name = "\0",
-                LayoutOrder = 2,
-                FontFace = Library.Font,
-                TextColor3 = FromRGB(200, 200, 200),
-                BorderColor3 = FromRGB(0, 0, 0),
-                Text = SubPageName,
+                Enabled = true,
+                Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(120, 120, 120)), RGBSequenceKeypoint(1, FromRGB(50, 50, 50))}
+            })
+
+            ButtonItems["Shadow"] = Instances:Create("ImageLabel", {
+                Name = "\0",
+                Parent = ButtonItems["Button"].Instance,
+                ImageColor3 = Color3.fromRGB(0, 0, 0),
+                ScaleType = Enum.ScaleType.Slice,
+                ImageTransparency = 1,
+                Size = UDim2.new(1, 14, 1, 14),
+                ZIndex = 0,
+                AnchorPoint = Vector2.new(0.5, 0.5),
+                Image = "http://www.roblox.com/asset/?id=18245826428",
                 BackgroundTransparency = 1,
-                Size = UDim2New(0, 0, 0, 16),
-                AutomaticSize = Enum.AutomaticSize.X,
+                Position = UDim2.new(0.5, 0, 0.5, 0),
+                BackgroundColor3 = FromRGB(255, 255, 255),
                 BorderSizePixel = 0,
-                TextXAlignment = Enum.TextXAlignment.Center,
-                TextTruncate = Enum.TextTruncate.AtEnd,
-                TextSize = 14,
-                BackgroundColor3 = FromRGB(255, 255, 255)
-            }) ButtonItems["Text"]:AddToTheme({TextColor3 = "Text"})
+                SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79))
+            })  ButtonItems["Shadow"]:AddToTheme({ImageColor3 = 'Accent'})
 
             SubPage.SubPageButtonItems = ButtonItems
 
@@ -3185,25 +3399,33 @@ local Themes = {
                 SubPage.Active = Bool
 
                 Debounce = true
-                SubPage.Items["Page"].Instance.Visible = Bool
-                SubPage.Items["Page"].Instance.Parent = Bool and self.ParentPage.Items["SubPagesContent"].Instance or Library.UnusedHolder.Instance
+                if Bool then
+                    SubPage.Items["Page"].Instance.Visible = true
+                    SubPage.Items["Page"].Instance.Parent = self.ParentPage.Items["SubPagesContent"].Instance
+                end
+                
                 SubPage.Items["Page"].Instance.Position = UDim2New(0, 0, 0, 0)
                 SubPage.Items["Page"].Instance.Size = UDim2New(1, 0, 1, 0)
 
                 if Bool then
-                    ButtonItems["Button"].Instance.BackgroundColor3 = Library.Theme.Accent
-                    ButtonItems["Icon"].Instance.ImageColor3 = FromRGB(0, 0, 0)
-                    ButtonItems["Text"].Instance.TextColor3 = FromRGB(0, 0, 0)
-
-                    ButtonItems["Icon"].Instance.ImageTransparency = 1
-                    ButtonItems["Icon"]:Tween(nil, {ImageTransparency = 0})
+                    ButtonItems["Button"]:Tween(nil, {BackgroundTransparency = 0})
+                    ButtonItems["ButtonGradient"].Instance.Enabled = true
+                    ButtonItems["Shadow"]:Tween(nil, {ImageTransparency = 0})
+                    
+                    ButtonItems["Icon"]:ChangeItemTheme({ImageColor3 = "Accent"})
+                    ButtonItems["Icon"]:Tween(nil, {ImageColor3 = Library.Theme.Accent, ImageTransparency = 0})
+                    ButtonItems["IconGradient"].Instance.Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(170, 170, 170))}
                 else
-                    ButtonItems["Button"].Instance.BackgroundColor3 = Library.Theme.Background
-                    ButtonItems["Icon"].Instance.ImageColor3 = Library.Theme.Text
-                    ButtonItems["Text"].Instance.TextColor3 = Library.Theme.Text
+                    ButtonItems["Button"]:Tween(nil, {BackgroundTransparency = 0.7})
+                    ButtonItems["ButtonGradient"].Instance.Enabled = false
+                    ButtonItems["Shadow"]:Tween(nil, {ImageTransparency = 1})
+                    
+                    ButtonItems["Icon"]:ChangeItemTheme({ImageColor3 = function()
+                        return FromRGB(255, 255, 255)
+                    end})
 
-                    ButtonItems["Icon"].Instance.ImageTransparency = 0
-                    ButtonItems["Icon"]:Tween(nil, {ImageTransparency = 0.5})
+                    ButtonItems["Icon"]:Tween(nil, {ImageColor3 = FromRGB(255, 255, 255), ImageTransparency = 0.4})
+                    ButtonItems["IconGradient"].Instance.Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(120, 120, 120)), RGBSequenceKeypoint(1, FromRGB(50, 50, 50))}
                 end
 
                 local AllInstances = SubPage.Items["Page"].Instance:GetDescendants()
@@ -3227,9 +3449,21 @@ local Themes = {
                     end
                 end
 
-                Library:Connect(NewTween.Tween.Completed, function()
+                if NewTween then
+                    Library:Connect(NewTween.Tween.Completed, function()
+                        Debounce = false
+                        if not Bool then
+                            SubPage.Items["Page"].Instance.Visible = false
+                            SubPage.Items["Page"].Instance.Parent = Library.UnusedHolder.Instance
+                        end
+                    end)
+                else
                     Debounce = false
-                end)
+                    if not Bool then
+                        SubPage.Items["Page"].Instance.Visible = false
+                        SubPage.Items["Page"].Instance.Parent = Library.UnusedHolder.Instance
+                    end
+                end
 
                 if Bool then
                     self.ParentPage.ActiveSubPage = SubPage
@@ -3243,66 +3477,20 @@ local Themes = {
                 end
             end)
 
-            TableInsert(self.SubPages, SubPage)
-
-            -- Dynamically resize all subpage buttons based on count
-            local subCount = #self.SubPages
-            local holderPadding = 24 -- 12px padding on each side of SubPagesHolder
-            local minGap = 4 -- minimum gap between buttons so they never touch
-            local maxButtonWidth = 200 -- max width for a single subpage button
-
-            -- Scale factor for icon/text sizing
-            local scaleFactor = MathClamp(1 - ((subCount - 1) * 0.12), 0.45, 1)
-
-            local maxIconSize = 16
-            local minIconSize = 10
-            local maxTextSize = 14
-            local minTextSize = 9
-
-            local iconSize = MathFloor(minIconSize + (maxIconSize - minIconSize) * scaleFactor)
-            local textSize = MathFloor(minTextSize + (maxTextSize - minTextSize) * scaleFactor)
-
-            -- Calculate button width from available space — buttons MUST fit inside
-            local holderWidth = self.Items["SubPagesHolder"].Instance.AbsoluteSize.X
-            if holderWidth <= 0 then holderWidth = 400 end -- fallback if not rendered yet
-
-            local availableWidth = holderWidth - holderPadding
-            local totalGaps = (subCount - 1) * minGap
-            local buttonWidth = MathFloor((availableWidth - totalGaps) / subCount)
-            buttonWidth = math.min(buttonWidth, maxButtonWidth) -- cap max, no min clamp so they always fit
-
-            -- Recalculate gap from leftover space
-            local totalButtonsWidth = buttonWidth * subCount
-            local remainingSpace = availableWidth - totalButtonsWidth
-            local gap = (subCount > 1) and MathFloor(remainingSpace / (subCount - 1)) or 0
-            gap = (subCount > 1) and MathClamp(gap, minGap, 40) or 0
-
-            -- Inner content width: button width minus some internal padding
-            local innerPad = MathFloor(MathClamp(buttonWidth * 0.1, 4, 12))
-            local innerWidth = buttonWidth - (innerPad * 2)
-            -- Text gets whatever space is left after the icon and the 6px gap between them
-            local textWidth = math.max(innerWidth - iconSize - 6, 0)
-            -- Hide text entirely if button is too narrow to show it
-            local showText = textWidth >= 14
-
-            for _, sp in self.SubPages do
-                local btn = sp.SubPageButtonItems
-                if btn then
-                    btn["Button"].Instance.Size = UDim2New(0, buttonWidth, 1, 0)
-                    btn["Icon"].Instance.Size = UDim2New(0, iconSize, 0, iconSize)
-                    btn["Text"].Instance.TextSize = textSize
-                    btn["Text"].Instance.Visible = showText
-                    btn["Text"].Instance.Size = UDim2New(0, showText and textWidth or 0, 0, textSize + 2)
-                    btn["Text"].Instance.AutomaticSize = Enum.AutomaticSize.None
-                    btn["InnerHolder"].Instance.Size = UDim2New(0, innerWidth, 0, iconSize)
-                    btn["InnerHolder"].Instance.AutomaticSize = Enum.AutomaticSize.None
+            -- Hover effects matching page buttons
+            ButtonItems["Button"]:OnHover(function()
+                if not SubPage.Active then
+                    ButtonItems["Icon"]:Tween(nil, {ImageTransparency = 0})
                 end
-            end
+            end)
 
-            -- Update spacing between buttons
-            if self.Items["SubPagesListLayout"] then
-                self.Items["SubPagesListLayout"].Instance.Padding = UDimNew(0, gap)
-            end
+            ButtonItems["Button"]:OnHoverLeave(function()
+                if not SubPage.Active then
+                    ButtonItems["Icon"]:Tween(nil, {ImageTransparency = 0.4})
+                end
+            end)
+
+            TableInsert(self.SubPages, SubPage)
 
             if #self.SubPages == 1 then
                 SubPage:Turn(true)
@@ -3432,6 +3620,274 @@ local Themes = {
             end
 
             return setmetatable(Section, Library.Sections)
+        end
+
+        Library.Pages.MultiSection = function(self, Data)
+            Data = Data or { }
+
+            local MultiSection = {
+                Window = self.Window,
+                Page = self,
+                
+                Sections = Data.Sections or Data.sections or { "Section 1", "Section 2", "Section 3" }, 
+                Side = Data.Side or Data.side or 1,
+
+                SectionContents = { },
+
+                Items = { }
+            }
+
+            local Items = { } do
+                Items["MultiSection"] = Instances:Create("Frame", {
+                    Parent = MultiSection.Page.ColumnsData[MultiSection.Side].Instance,
+                    Name = "\0",
+                    Size = UDim2New(1, 0, 0, 25),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    BorderSizePixel = 0,
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    BackgroundColor3 = FromRGB(22, 25, 30)
+                })  Items["MultiSection"]:AddToTheme({BackgroundColor3 = "Inline"})
+                
+                Instances:Create("UICorner", {
+                    Parent = Items["MultiSection"].Instance,
+                    Name = "\0"
+                })
+                
+                Instances:Create("UIStroke", {
+                    Parent = Items["MultiSection"].Instance,
+                    Name = "\0",
+                    Color = FromRGB(26, 30, 36),
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                }):AddToTheme({Color = "Outline"})
+                
+                Instances:Create("UIPadding", {
+                    Parent = Items["MultiSection"].Instance,
+                    PaddingBottom = UDimNew(0, 10)
+                }) 
+                
+                
+                
+                Items["Sections"] = Instances:Create("Frame", {
+                    Parent = Items["MultiSection"].Instance,
+                    Name = "\0",
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 8, 0, 8),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Size = UDim2New(1, -16, 0, 20),
+                    BorderSizePixel = 0,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                }) 
+                
+                Instances:Create("UIListLayout", {
+                    Parent = Items["Sections"].Instance,
+                    FillDirection = Enum.FillDirection.Horizontal,
+                    HorizontalFlex = Enum.UIFlexAlignment.Fill,
+                    Padding = UDimNew(0, 5),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                }) 
+
+                Items["Content"] = Instances:Create("Frame", {
+                    Parent = Items["MultiSection"].Instance,
+                    Name = "\0",
+                    BackgroundTransparency = 1,
+                    Position = UDim2New(0, 10, 0, 48),
+                    BorderColor3 = FromRGB(10, 10, 10),
+                    Size = UDim2New(1, -20, 0, 0),
+                    BorderSizePixel = 0,
+                    AutomaticSize = Enum.AutomaticSize.Y,
+                    BackgroundColor3 = FromRGB(15, 15, 20)
+                }) 
+            end
+
+            for Index, Value in MultiSection.Sections do 
+                local NewSection = {
+                    Window = MultiSection.Window,
+                    Page = MultiSection.Page,
+                    MultiSection = MultiSection,
+
+                    Name = Value,
+
+                    Items = { },
+
+                    Active = false,
+                }
+
+                local SubItems = { } do 
+                    SubItems["Inactive"] = Instances:Create("TextButton", {
+                        Parent = Items["Sections"].Instance,
+                        FontFace = Library.Font,
+                        TextColor3 = FromRGB(0, 0, 0),
+                        BorderColor3 = FromRGB(10, 10, 10),
+                        Text = "",
+                        AutoButtonColor = false,
+                        Name = "\0",
+                        Size = UDim2New(1, 0, 1, 0),
+                        BorderSizePixel = 0,
+                        ZIndex = 3,
+                        TextSize = 14,
+                        BackgroundColor3 = FromRGB(13, 15, 18)
+                    })  SubItems["Inactive"]:AddToTheme({BackgroundColor3 = "Background"})
+                    
+                    Instances:Create("UICorner", {
+                        Parent = SubItems["Inactive"].Instance,
+                        CornerRadius = UDimNew(0, 6)
+                    })
+                    
+                    SubItems["Stroke"] = Instances:Create("UIStroke", {
+                        Parent = SubItems["Inactive"].Instance,
+                        Name = "\0",
+                        Color = FromRGB(26, 30, 36),
+                        ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                    })
+                    SubItems["Stroke"]:AddToTheme({Color = "Outline"})
+
+                    SubItems["Gradient"] = Instances:Create("UIGradient", {
+                        Parent = SubItems["Inactive"].Instance,
+                        Name = "\0",
+                        Enabled = true,
+                        Rotation = 90,
+                        Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(170, 170, 170))}
+                    })
+                    
+                    SubItems["Shadow"] = Instances:Create("ImageLabel", {
+                        Name = "\0",
+                        Parent = SubItems["Inactive"].Instance,
+                        ImageColor3 = Color3.fromRGB(0, 0, 0),
+                        ScaleType = Enum.ScaleType.Slice,
+                        SliceScale = 0.5,
+                        ImageTransparency = 1,
+                        Size = UDim2.new(1, 10, 1, 10),
+                        ZIndex = 2,
+                        AnchorPoint = Vector2.new(0.5, 0.5),
+                        Image = "http://www.roblox.com/asset/?id=18245826428",
+                        BackgroundTransparency = 1,
+                        Position = UDim2.new(0.5, 0, 0.5, 0),
+                        BackgroundColor3 = FromRGB(255, 255, 255),
+                        BorderSizePixel = 0,
+                        SliceCenter = Rect.new(Vector2.new(21, 21), Vector2.new(79, 79))
+                    })  SubItems["Shadow"]:AddToTheme({ImageColor3 = "Accent"})
+
+                    SubItems["Text"] = Instances:Create("TextLabel", {
+                        Parent = SubItems["Inactive"].Instance,
+                        FontFace = Library.Font,
+                        TextColor3 = FromRGB(200, 200, 200),
+                        TextTransparency = 0.5,
+                        Text = NewSection.Name,
+                        Name = "\0",
+                        Size = UDim2New(1, 0, 1, 0),
+                        BackgroundTransparency = 1,
+                        Position = UDim2New(0, 0, 0, 0),
+                        BorderSizePixel = 0,
+                        ZIndex = 4,
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        TextSize = 12,
+                        BackgroundColor3 = FromRGB(255, 255, 255)
+                    })  SubItems["Text"]:AddToTheme({TextColor3 = "Text"})
+
+                    SubItems["Content"] = Instances:Create("Frame", {
+                        Parent = Items["Content"].Instance,
+                        BackgroundTransparency = 1,
+                        Name = "\0",
+                        BorderColor3 = FromRGB(0, 0, 0),
+                        Size = UDim2New(1, 0, 0, 0),
+                        BorderSizePixel = 0,
+                        Visible = false,
+                        AutomaticSize = Enum.AutomaticSize.Y,
+                        BackgroundColor3 = FromRGB(255, 255, 255)
+                    }) 
+                    
+                    Instances:Create("UIListLayout", {
+                        Parent = SubItems["Content"].Instance,
+                        Padding = UDimNew(0, 6),
+                        SortOrder = Enum.SortOrder.LayoutOrder
+                    }) 
+                end
+
+                local Debounce = false
+
+                function NewSection:Turn(Bool)
+                    if Debounce then 
+                        return 
+                    end
+
+                    NewSection.Active = Bool
+                    Debounce = true 
+
+                    if Bool then 
+                        SubItems["Content"].Instance.Visible = true
+
+                        SubItems["Shadow"]:Tween(nil, {ImageTransparency = 0.3})
+
+                        SubItems["Inactive"]:Tween(nil, {BackgroundColor3 = Library.Theme.Element})
+                        SubItems["Inactive"]:ChangeItemTheme({BackgroundColor3 = "Element"})
+
+                        SubItems["Stroke"]:Tween(nil, {Color = Library.Theme.Accent})
+                        SubItems["Stroke"]:ChangeItemTheme({Color = "Accent"})
+
+                        SubItems["Text"]:Tween(nil, {TextColor3 = Library.Theme.Accent, TextTransparency = 0})
+                        SubItems["Text"]:ChangeItemTheme({TextColor3 = "Accent"})
+                    else
+                        SubItems["Shadow"]:Tween(nil, {ImageTransparency = 1})
+
+                        SubItems["Inactive"]:Tween(nil, {BackgroundColor3 = Library.Theme.Background})
+                        SubItems["Inactive"]:ChangeItemTheme({BackgroundColor3 = "Background"})
+
+                        SubItems["Stroke"]:Tween(nil, {Color = Library.Theme.Outline})
+                        SubItems["Stroke"]:ChangeItemTheme({Color = "Outline"})
+
+                        SubItems["Text"]:Tween(nil, {TextColor3 = Library.Theme["Dark Text"], TextTransparency = 0.5})
+                        SubItems["Text"]:ChangeItemTheme({TextColor3 = "Dark Text"})
+                    end
+
+                    local Descendants = SubItems["Content"].Instance:GetDescendants()
+                    TableInsert(Descendants, SubItems["Content"].Instance)
+
+                    local NewTween
+                    for _, Value in Descendants do 
+                        local TransparencyProperty = Tween:GetProperty(Value)
+
+                        if not TransparencyProperty then 
+                            continue
+                        end
+
+                        if type(TransparencyProperty) == "table" then
+                            for _, Property in TransparencyProperty do 
+                                NewTween = Tween:FadeItem(Value, Property, Bool, Library.FadeSpeed or 0.2)
+                            end
+                        else
+                            NewTween = Tween:FadeItem(Value, TransparencyProperty, Bool, Library.FadeSpeed or 0.2)
+                        end
+                    end
+
+                    if NewTween then
+                        Library:Connect(NewTween.Tween.Completed, function()
+                            Debounce = false
+                            SubItems["Content"].Instance.Visible = Bool
+                        end)
+                    else
+                        Debounce = false
+                        SubItems["Content"].Instance.Visible = Bool
+                    end
+                end
+
+                SubItems["Inactive"]:Connect("MouseButton1Down", function()
+                    for _, Value in MultiSection.SectionContents do
+                        Value:Turn(Value == NewSection)
+                    end
+                end)
+
+                if #MultiSection.SectionContents == 0 then 
+                    NewSection:Turn(true)
+                end
+
+                NewSection.Items = SubItems
+
+                MultiSection.SectionContents[#MultiSection.SectionContents+1] = setmetatable(NewSection, Library.Sections)
+            end
+
+            MultiSection.SectionContents[1]:Turn(true)
+            MultiSection.Items = Items
+            return unpack(MultiSection.SectionContents)
         end
 
         Library.Sections.Toggle = function(self, Data)
@@ -4275,7 +4731,7 @@ local Themes = {
                     end
 
                     if not Value.ClassName:find("UI") then 
-                        Value.ZIndex = Dropdown.IsOpen and 3 or 1
+                        Value.ZIndex = Dropdown.IsOpen and 50 or 1
                     end
 
                     if type(TransparencyProperty) == "table" then 
@@ -4935,9 +5391,22 @@ local Themes = {
                     Library.Tween.Time = Value
                 end
             })
+
+            SettingsSection:Toggle({
+                Name = "Watermark",
+                Default = true,
+                Callback = function(Value)
+                    if Library.WatermarkInstance then
+                        Library.WatermarkInstance.Visible = Value
+                    end
+                end
+            })
         end
     end
+
+
 end
+       
 
 getgenv().Library = Library
 return Library
