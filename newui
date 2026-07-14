@@ -1999,7 +1999,7 @@ local Themes = {
                 })  Items["MainFrame"]:AddToTheme({BackgroundColor3 = "Background"})
 
                 Items["MainFrame"]:MakeDraggable()
-                Items["MainFrame"]:MakeResizeable(Vector2New(Items["MainFrame"].Instance.AbsoluteSize.X, Items["MainFrame"].Instance.AbsoluteSize.Y), Vector2New(9999, 9999))
+                Items["MainFrame"]:MakeResizeable(Vector2New(330, 502), Vector2New(9999, 9999))
                 
                 Library.WindowInstance = Items["MainFrame"].Instance
 
@@ -3111,6 +3111,20 @@ local Themes = {
                 if Bool then
                     Items["Page"].Instance.Visible = true
                     Items["Page"].Instance.Parent = Page.Window.Items["Content"].Instance
+
+                    local TargetWidth = (Page.Columns == 1) and 330 or 622
+                    local CurrentSize = Page.Window.Items["MainFrame"].Instance.Size
+                    local CurrentPosition = Page.Window.Items["MainFrame"].Instance.Position
+
+                    if CurrentSize.X.Offset ~= TargetWidth then
+                        local DiffX = (CurrentSize.X.Offset - TargetWidth) / 2
+                        local NewX = CurrentPosition.X.Offset + DiffX
+                        
+                        Page.Window.Items["MainFrame"]:Tween(nil, {
+                            Size = UDim2New(0, TargetWidth, 0, 502),
+                            Position = UDim2New(0, NewX, 0, CurrentPosition.Y.Offset)
+                        })
+                    end
                 end
 
                 if Page.Active then
