@@ -3011,7 +3011,7 @@ local Themes = {
                     CanvasSize = UDim2New(0, 0, 0, 0)
                 })
                 
-                Instances:Create("UIPadding", {
+                local LeftColumnPadding = Instances:Create("UIPadding", {
                     Parent = Items["LeftColumn"].Instance,
                     Name = "\0",
                     PaddingTop = UDimNew(0, 12),
@@ -3088,6 +3088,7 @@ local Themes = {
                 
                 if Page.Columns == 1 then
                     Items["LeftColumn"].Instance.Size = UDim2New(1, 0, 1, 0)
+                    LeftColumnPadding.Instance.PaddingRight = UDimNew(0, 12)
                     Items["RightColumn"].Instance.Visible = false
                     Items["RightColumn"].Instance.Size = UDim2New(0, 0, 0, 0)
                 end
